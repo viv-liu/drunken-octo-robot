@@ -22,36 +22,41 @@ void PointLight::shade( Ray3D& ray ) {
 
 	if(!ray.intersection.none) {
 		// Intersection point to point light source position
-		Vector3D s = this->_pos - ray.intersection.point;
+		Vector3D s = Vector3D(this->_pos - ray.intersection.point);
 		s.normalize();
-		// Projection of s onto intersection normal
-		Vector3D t = ray.intersection.normal.dot(s) * ray.intersection.normal;
-		//t.normalize();
+
 		// Reflection of s across n
-		Vector3D r = -1 * s + 2 * t;
+		Vector3D r = Vector3D(-1 * s + 2 * ray.intersection.normal.dot(s) * ray.intersection.normal);
+
 		//r.normalize();
 		// Intersection point to camera position
 		Vector3D b = ray.origin - ray.intersection.point;
 		b.normalize();
+
 		// Material properties, easier access
-		Colour mat_ambient = Colour(ray.intersection.mat->ambient);
-		Colour mat_diffuse = Colour(ray.intersection.mat->diffuse);
-		Colour mat_specular = Colour(ray.intersection.mat->specular);
+		Colour mat_a= Colour(ray.intersection.mat->ambient);
+		Colour mat_d = Colour(ray.intersection.mat->diffuse);
+		Colour mat_s = Colour(ray.intersection.mat->specular);
+		
+		// Light source properties
+		Colour I_a = this->_col_ambient;
+		Colour I_d = this->_col_diffuse;
+		Colour I_s = this->_col_specular;
+
+		double alpha = ray.intersection.mat->specular_exp;
 
 		// Compute ray colours using Phong model
-		double ray_col_r = mat_ambient[0] * this->_col_ambient[0] +
-						   mat_diffuse[0] * this->_col_diffuse[0] * fmax(0, ray.intersection.normal.dot(s)) +
-						   mat_specular[0] * this->_col_specular[0] * pow(fmax(0, r.dot(b)), ray.intersection.mat->specular_exp);
+		ray.col[0] = mat_a[0] * I_a[0] +
+					 mat_d[0] * I_d[0] * fmax(0, s.dot(ray.intersection.normal)) +
+					 mat_s[0] * I_s[0] * pow(fmax(0, r.dot(b)), alpha);
 		
-		double ray_col_g = mat_ambient[1] * this->_col_ambient[1] +
-						   mat_diffuse[1] * this->_col_diffuse[1] * fmax(0, ray.intersection.normal.dot(s)) +
-						   mat_specular[1] * this->_col_specular[1] * pow(fmax(0, r.dot(b)), ray.intersection.mat->specular_exp);				
+		ray.col[1] = mat_a[1] * I_a[1] +
+					 mat_d[1] * I_d[1] * fmax(0, s.dot(ray.intersection.normal)) +
+					 mat_s[1] * I_s[1] * pow(fmax(0, r.dot(b)), alpha);
 
-		double ray_col_b = mat_ambient[2] * this->_col_ambient[2] +
-						   mat_diffuse[2] * this->_col_diffuse[2] * fmax(0, ray.intersection.normal.dot(s)) +
-						   mat_specular[2] * this->_col_specular[2] * pow(fmax(0, r.dot(b)), ray.intersection.mat->specular_exp);   
-		double total_col = ray_col_r + ray_col_g + ray_col_b;
-		ray.col = Colour(ray_col_r/total_col, ray_col_g/total_col, ray_col_b/total_col);
+		ray.col[2] = mat_a[2] * I_a[2] +
+					 mat_d[2] * I_d[2] * fmax(0, s.dot(ray.intersection.normal)) +
+					 mat_s[2] * I_s[2] * pow(fmax(0, r.dot(b)), alpha);
 
 		// Clamp values down to 1.0
 		ray.col.clamp();

@@ -257,7 +257,7 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view,
 			Vector3D rayDir = Vector3D(imagePlane[0], imagePlane[1], imagePlane[2]);
 			rayDir = viewToWorld * rayDir;
 			rayDir.normalize();
-			Ray3D ray = Ray3D(origin, rayVec);
+			Ray3D ray = Ray3D(origin, rayDir);
 
 			// shadeRay(ray) to generate pixel colour. 	
 			Colour col = shadeRay(ray); 
@@ -302,7 +302,7 @@ int main(int argc, char* argv[])
 			12.8 );
 
 	// Defines a point light source.
-	raytracer.addLightSource( new PointLight(Point3D(0, 0, 5), 
+	raytracer.addLightSource( new PointLight(Point3D(5, 0, 0), 
 				Colour(0.9, 0.9, 0.9) ) );
 
 	// Add a unit square into the scene with material mat.
