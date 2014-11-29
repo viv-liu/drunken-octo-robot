@@ -26,13 +26,6 @@ bool UnitSquare::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 	// HINT: Remember to first transform the ray into object space  
 	// to simplify the intersection test.
 
-	Material gold( Colour(0.3, 0.3, 0.3), Colour(0.75164, 0.60648, 0.22648), 
-			Colour(0.628281, 0.555802, 0.366065), 
-			51.2 );
-	Material jade( Colour(0, 0, 0), Colour(0.54, 0.89, 0.63), 
-			Colour(0.316228, 0.316228, 0.316228), 
-			12.8 );
-
 	Vector3D rayVec = Vector3D(ray.dir[0], ray.dir[1], ray.dir[2]);
 	Point3D rayOrigin = Point3D(ray.origin[0], ray.origin[1], ray.origin[2]);
 	
@@ -43,17 +36,30 @@ bool UnitSquare::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 
 	// Compute t_value from z intersection at z = 0
 	double t_value = (-1*rayObjSpace.origin[2])/rayObjSpace.dir[2];
+	
+	// If the ray already has an intersection at an earlier t_value, return but don't update
+	// ray.intersection fields
+	if(ray.intersection.none == false) {
+		if(t_value > ray.intersection.t_value) {
+			return true;
+		}
+	}
 
-	double x_at_t = rayObjSpace.origin[0] + rayObjSpace.dir[0] * t_value;
-	double y_at_t = rayObjSpace.origin[1] + rayObjSpace.dir[1] * t_value;
+	// Compute coordinates
+	Vector3D intersection(rayObjSpace.origin[0] + rayObjSpace.dir[0] * t_value,
+					     	   rayObjSpace.origin[1] + rayObjSpace.dir[1] * t_value,
+							   0);
+	//double x_at_t = rayObjSpace.origin[0] + rayObjSpace.dir[0] * t_value;
+	//double y_at_t = rayObjSpace.origin[1] + rayObjSpace.dir[1] * t_value;
 
 	// Test x
-	if(x_at_t >= -0.5 && x_at_t <= 0.5) {
+	if(intersection[0] >= -0.5 && intersection[0] <= 0.5) {
 		// Text y
-		if(y_at_t >= -0.5 && y_at_t <= 0.5) {
+		if(intersection[1] >= -0.5 && intersection[1] <= 0.5) {
 			// We have an intersection
-			ray.intersection.point = Point3D(x_at_t, y_at_t, 0);
+			ray.intersection.point = Point3D(intersection[0], intersection[1], intersection[2]);
 			ray.intersection.normal = Vector3D(0, 0, 1);
+			ray.intersection.normal = transNorm(modelToWorld, ray.intersection.normal);
 			ray.intersection.none = false;
 			ray.intersection.t_value = t_value;
 
@@ -61,7 +67,6 @@ bool UnitSquare::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 			ray.intersection.point = modelToWorld * ray.intersection.point;
 			ray.intersection.normal = modelToWorld * ray.intersection.normal;
 		
-			ray.intersection.mat = &gold;
 			return true;
 		}
 	}
@@ -89,7 +94,7 @@ bool UnitSphere::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 	
 	Ray3D rayObjSpace = Ray3D(rayOrigin, rayVec);
 
-	double a = pow(rayObjSpace.dir[0], 2) + pow(rayObjSpace.dir[1], 2) + pow (rayObjSpace.dir[2], 2);
+	double a = pow(rayObjSpace.dir[0], 2) + pow(rayObjSpace.dir[1], 2) + pow(rayObjSpace.dir[2], 2);
 	double b = 2 * (rayObjSpace.origin[0] * rayObjSpace.dir[0] +
 					rayObjSpace.origin[1] * rayObjSpace.dir[1] +
 					rayObjSpace.origin[2] * rayObjSpace.dir[2]);
@@ -104,6 +109,13 @@ bool UnitSphere::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 
 	} else if (discriminant == 0) { // Single intersection aka. tangent to sphere
 		double t_value = -1 * b / (2 * a);
+		// If the ray already has an intersection at an earlier t_value, return but don't update
+		// ray.intersection fields
+		if(ray.intersection.none == false) {
+			if(t_value > ray.intersection.t_value) {
+				return true;
+			}
+		}
 		double x_at_t = rayObjSpace.origin[0] + rayObjSpace.dir[0] * t_value;
 		double y_at_t = rayObjSpace.origin[1] + rayObjSpace.dir[1] * t_value;
 		double z_at_t = rayObjSpace.origin[2] + rayObjSpace.dir[2] * t_value;
@@ -116,7 +128,7 @@ bool UnitSphere::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 
 		// Convert back to world space
 		ray.intersection.point = modelToWorld * ray.intersection.point;
-		ray.intersection.normal = modelToWorld * ray.intersection.normal;
+		ray.intersection.normal = transNorm(worldToModel, ray.intersection.normal);
 		return true;
 
 	} else { // LINE has two points of intersection, however, RAY only permits positive values of t
@@ -131,21 +143,31 @@ bool UnitSphere::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 			if(t_2 >= 0) t_value = t_2;
 			if(t_1 >= 0 && t_2 >= 0) t_value = t_1 > t_2 ? t_2 : t_1; // If both are positive, keep smaller t_value aka. first intersection
 		}
-
+		// If the ray already has an intersection at an earlier t_value, return but don't update
+		// ray.intersection fields
+		if(ray.intersection.none = false) {
+			if(t_value > ray.intersection.t_value) {
+				return true;
+			}
+		}
 		// Compute coordinates
-		double x_at_t = rayObjSpace.origin[0] + rayObjSpace.dir[0] * t_value;
-		double y_at_t = rayObjSpace.origin[1] + rayObjSpace.dir[1] * t_value;
-		double z_at_t = rayObjSpace.origin[2] + rayObjSpace.dir[2] * t_value;
-		double mag = sqrt(pow(x_at_t, 2) + pow(y_at_t, 2) + pow(z_at_t, 2));
+		Vector3D intersectionPoint(rayObjSpace.origin[0] + rayObjSpace.dir[0] * t_value,
+		rayObjSpace.origin[1] + rayObjSpace.dir[1] * t_value,
+		rayObjSpace.origin[2] + rayObjSpace.dir[2] * t_value);
 
-		ray.intersection.point = Point3D(x_at_t, y_at_t, z_at_t);
-		ray.intersection.normal = Vector3D(x_at_t/mag, y_at_t/mag, z_at_t/mag);
+		ray.intersection.point = Point3D(intersectionPoint[0], intersectionPoint[1], intersectionPoint[2]);
+		intersectionPoint.normalize();
+		ray.intersection.normal = transNorm(modelToWorld, intersectionPoint);
 		ray.intersection.none = false;
 		ray.intersection.t_value = t_value;
 
 		// Convert back to world space
-		ray.intersection.point = modelToWorld * ray.intersection.point;
-		ray.intersection.normal = modelToWorld * ray.intersection.normal;
+		//ray.intersection.point = modelToWorld * ray.intersection.point;
+		std::cout << "Point ";
+		std::cout << ray.intersection.point[0];
+		std::cout << ray.intersection.point[1];
+		std::cout << ray.intersection.point[2];
+		std::cout <<"\n";
 		return true;
 	}
 }

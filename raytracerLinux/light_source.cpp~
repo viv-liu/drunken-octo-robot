@@ -26,10 +26,10 @@ void PointLight::shade( Ray3D& ray ) {
 		s.normalize();
 		// Projection of s onto intersection normal
 		Vector3D t = ray.intersection.normal.dot(s) * ray.intersection.normal;
-		t.normalize();
+		//t.normalize();
 		// Reflection of s across n
 		Vector3D r = -1 * s + 2 * t;
-		r.normalize();
+		//r.normalize();
 		// Intersection point to camera position
 		Vector3D b = ray.origin - ray.intersection.point;
 		b.normalize();
@@ -51,7 +51,7 @@ void PointLight::shade( Ray3D& ray ) {
 						   mat_diffuse[2] * this->_col_diffuse[2] * fmax(0, ray.intersection.normal.dot(s)) +
 						   mat_specular[2] * this->_col_specular[2] * pow(fmax(0, r.dot(b)), ray.intersection.mat->specular_exp);   
 		double total_col = ray_col_r + ray_col_g + ray_col_b;
-		//ray.col = Colour(ray_col_r/total_col, ray_col_g/total_col, ray_col_b/total_col);
+		ray.col = Colour(ray_col_r/total_col, ray_col_g/total_col, ray_col_b/total_col);
 
 		// Clamp values down to 1.0
 		ray.col.clamp();

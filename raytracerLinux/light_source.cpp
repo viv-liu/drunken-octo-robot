@@ -26,7 +26,7 @@ void PointLight::shade( Ray3D& ray ) {
 		s.normalize();
 		// Projection of s onto intersection normal
 		Vector3D t = ray.intersection.normal.dot(s) * ray.intersection.normal;
-		t.normalize();
+		//t.normalize();
 		// Reflection of s across n
 		Vector3D r = -1 * s + 2 * t;
 		r.normalize();
