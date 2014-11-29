@@ -131,11 +131,11 @@ bool UnitSphere::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 			std::cout << ray.intersection.normal[1];
 			std::cout << ray.intersection.normal[2];
 			std::cout <<"\n";*/
-		std::cout << "Point ";
+		/*std::cout << "Point ";
 			std::cout << intersection[0];
 			std::cout << intersection[1];
 			std::cout << intersection[2];
-			std::cout <<"\n";
+			std::cout <<"\n";*/
 		return true;
 	}
 }

@@ -249,10 +249,14 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view,
 			// image plane is at z = -1.
 			Point3D origin(0, 0, 0);
 			Point3D imagePlane;
-			imagePlane[0] = (-double(width)/2 + 0.5 + j)/factor;
-			imagePlane[1] = (-double(height)/2 + 0.5 + i)/factor;
+			//imagePlane[0] = (-double(width)/2 + 0.5 + j)/factor;
+			//imagePlane[1] = (-double(height)/2 + 0.5 + i)/factor;
+			// Anti-aliasing
+			imagePlane[0] = (-double(width)/2 + ((double)rand()/(double)RAND_MAX) + j)/factor;
+			imagePlane[1] = (-double(height)/2 + ((double)rand()/(double)RAND_MAX) + i)/factor;
 			imagePlane[2] = -1;
 			
+			//std::cout << ((double)rand()/(double)RAND_MAX);
 			// TODO: Convert ray to world space and call 
 			Vector3D rayDir = Vector3D(imagePlane[0], imagePlane[1], imagePlane[2]);
 			rayDir = viewToWorld * rayDir;
