@@ -37,12 +37,15 @@ bool UnitSquare::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 							   0);
 	double x = ObjectRay.origin[0] + ObjectRay.dir[0] * t_value;
 	double y = ObjectRay.origin[1] + ObjectRay.dir[1] * t_value;
+
+	Point3D WorldIntersection = modelToWorld * Point3D(x, y, 0);
+	double Worldt_value = (WorldIntersection[2] - ray.origin[2])/ray.dir[2];
 	
 	// If the ray already has an intersection at an earlier t_value, return but don't update
 	// ray.intersection fields
 	if(ray.intersection.none == false) {
 		
-		if(t_value > ray.intersection.t_value) {
+		if(Worldt_value > ray.intersection.t_value) {
 			return false;
 		}
 	}
