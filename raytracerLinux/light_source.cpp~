@@ -37,13 +37,13 @@ void PointLight::shade( Ray3D& ray, bool isInShadow )
 		// Reflection of s across n
 		// Compute the reflection vector 
 		//Vector3D r = Vector3D(-1 * s + 2 * ray.intersection.normal.dot(s) * ray.intersection.normal);
-		Vector3D r = Vector3D(-1 * s + 2 * s.dot(ray.intersection.normal) * ray.intersection.normal);
+		Vector3D r = Vector3D(-1 * s - 2 * ray.intersection.normal.dot(s) * ray.intersection.normal);
 		r.normalize();
 
 		// Intersection point to camera position
 		
 		// TODO: Rename b to e for eye vector
-		// Create a vector from the intersection point to ray's origin
+		// Create a vector from the ray's origin to the intersection point 
 		Vector3D b = ray.origin - ray.intersection.point; // are u sure this is right? Might need to be other direction 
 		b.normalize();
 
@@ -69,11 +69,11 @@ void PointLight::shade( Ray3D& ray, bool isInShadow )
 		// Only add the diffuse and specular components if it was not in Shadow  
 		if(isInShadow == false) 
 		{
-			ray.col[0] += mat_d[0] * I_d[0] * fmax(0, ray.intersection.normal.dot(s)) +
+			ray.col[0] += mat_d[0] * I_d[0] * fmax(0, s.dot(ray.intersection.normal)) +
 					 mat_s[0] * I_s[0] * pow(fmax(0, r.dot(b)), alpha);
-			ray.col[1] += mat_d[1] * I_d[1] * fmax(0, ray.intersection.normal.dot(s)) +
+			ray.col[1] += mat_d[1] * I_d[1] * fmax(0, s.dot(ray.intersection.normal)) +
 					 mat_s[1] * I_s[1] * pow(fmax(0, r.dot(b)), alpha);
-			ray.col[2] += mat_d[2] * I_d[2] * fmax(0,  ray.intersection.normal.dot(s)) +
+			ray.col[2] += mat_d[2] * I_d[2] * fmax(0, s.dot(ray.intersection.normal)) +
 					 mat_s[2] * I_s[2] * pow(fmax(0, r.dot(b)), alpha);
 		}
 		// Clamp values down to 1.0

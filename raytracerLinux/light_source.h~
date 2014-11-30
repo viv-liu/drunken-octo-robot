@@ -20,7 +20,7 @@
 class LightSource {
 public:
 	// Apply Shading to the Ray3D given if it is in shadow 
-	virtual void shade( Ray3D&, bool isInShadow ) = 0; // Make it polymorphic
+	virtual void shade( Ray3D&, bool isInShadow ) = 0;
 	// Get position 
 	virtual Point3D get_position() const = 0; 
 };
@@ -41,8 +41,6 @@ public:
 	PointLight( Point3D pos, Colour ambient, Colour diffuse, Colour specular ) 
 	: _pos(pos), _col_ambient(ambient), _col_diffuse(diffuse), 
 	_col_specular(specular) {}
-	
-	// Methods 
 	void shade( Ray3D& ray, bool isInShadow );
 	Point3D get_position() const { return _pos; }	
 };

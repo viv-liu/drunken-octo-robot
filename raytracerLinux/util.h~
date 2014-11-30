@@ -197,7 +197,7 @@ struct Intersection {
 	// Normal at the intersection.
 	Vector3D normal;
 	// Material at the intersection.
-	Material* mat;	
+	Material* mat;
 	// Position of the intersection point on your ray.
 	// (i.e. point = ray.origin + t_value * ray.dir)
 	// This is used when you need to intersect multiply objects and

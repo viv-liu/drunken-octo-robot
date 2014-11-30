@@ -106,11 +106,10 @@ private:
 	// Each of these is dynamically allocated with a single array that has 
 	// a size big enough for the entire screen in chars 
 
-	// This always changes during Raytracer.traverseScene()
 	// Maintain global transformation matrices similar to OpenGL's matrix
 	// stack.  These are used during scene traversal. 
-	Matrix4x4 _modelToWorld;	// This is a global transformation used during traversal from each modelToWorld
-	Matrix4x4 _worldToModel;	// This is a gloabl transformation to be used for recovering from world back to model 
+	Matrix4x4 _modelToWorld;
+	Matrix4x4 _worldToModel;
 
 //----------------------------------------------------------------------------------------------
 // Private Methods
