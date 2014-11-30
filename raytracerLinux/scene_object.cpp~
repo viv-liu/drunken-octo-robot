@@ -12,8 +12,8 @@
 #include <iostream>
 #include "scene_object.h"
 
-bool UnitSquare::intersect( Ray3D& ray, const Matrix4x4& worldToModel, const Matrix4x4& modelToWorld )
-{
+bool UnitSquare::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
+		const Matrix4x4& modelToWorld ) {
 	// TODO: implement intersection code for UnitSquare, which is
 	// defined on the xy-plane, with vertices (0.5, 0.5, 0), 
 	// (-0.5, 0.5, 0), (-0.5, -0.5, 0), (0.5, -0.5, 0), and normal

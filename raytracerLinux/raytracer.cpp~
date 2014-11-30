@@ -316,6 +316,8 @@ Matrix4x4 Raytracer::initInvViewMatrix( Point3D eye, Vector3D view, Vector3D up)
 	return mat; 
 }
 
+
+
 // Helper function called by render()
 // This function initializes the pixel buffer assuming _scrWidth & _scrheight has been given the right values 
 void Raytracer::initPixelBuffer() 

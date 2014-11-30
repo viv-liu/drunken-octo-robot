@@ -10,18 +10,16 @@
 
 ***********************************************************/
 
-// This file contains information about: 
-//---------------------
+// This file contains information about 
 // point3D
 // Vector3D
 // Vector4D
 // Matrix 
-//---------------------
+
 // Colour
 // Material
 // Intersection
 // Ray3D
-//---------------------
 
 #ifndef _UTIL_
 #define _UTIL_

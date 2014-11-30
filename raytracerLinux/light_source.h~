@@ -7,11 +7,7 @@
 		   light source classes
 
 ***********************************************************/
-// This file contains information about: 
-//---------------------
-// LightSource
-// PointLight (child of LightSource) 
-//---------------------
+
 #include "util.h"
 
 // Base class for a light source.  You could define different types

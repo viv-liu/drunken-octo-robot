@@ -103,8 +103,6 @@ private:
 	unsigned char* _rbuffer;
 	unsigned char* _gbuffer;
 	unsigned char* _bbuffer;
-	// Each of these is dynamically allocated with a single array that has 
-	// a size big enough for the entire screen in chars 
 
 	// Maintain global transformation matrices similar to OpenGL's matrix
 	// stack.  These are used during scene traversal. 
