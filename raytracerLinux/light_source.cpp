@@ -7,6 +7,9 @@
 		implements light_source.h
 
 ***********************************************************/
+// Defines the basic light class.  You could define different types of 
+// lights, which shades the ray differently.  Point lights are sufficient 
+// for most scenes.  
 
 #include <cmath>
 #include "light_source.h"

@@ -9,7 +9,8 @@
 		scene to be rendered.	
 
 ***********************************************************/
-
+//The main body of the raytracer, including the scene graph.  Simple 
+// addition and traversal code to the graph are provided to you. 
 
 #include "raytracer.h"
 #include "bmp_io.h"
@@ -17,16 +18,19 @@
 #include <iostream>
 #include <cstdlib>
 
+// Initialize the root with no light source
 Raytracer::Raytracer() : _lightSource(NULL) {
 	_root = new SceneDagNode();
 }
 
+// Delete the root only 
 Raytracer::~Raytracer() {
 	delete _root;
 }
 
 SceneDagNode* Raytracer::addObject( SceneDagNode* parent, 
 		SceneObject* obj, Material* mat ) {
+	// Create a new node with SceneDagnode
 	SceneDagNode* node = new SceneDagNode( obj, mat );
 	node->parent = parent;
 	node->next = NULL;

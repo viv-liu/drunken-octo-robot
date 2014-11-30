@@ -9,7 +9,8 @@
 		scene to be rendered.	
 
 ***********************************************************/
-
+//The main body of the raytracer, including the scene graph.  Simple 
+// addition and traversal code to the graph are provided to you. 
 
 #include "raytracer.h"
 #include "bmp_io.h"
@@ -17,19 +18,24 @@
 #include <iostream>
 #include <cstdlib>
 
+// Initialize the root with no light source
 Raytracer::Raytracer() : _lightSource(NULL) {
 	_root = new SceneDagNode();
 }
 
+// Delete the root only 
 Raytracer::~Raytracer() {
 	delete _root;
 }
 
 SceneDagNode* Raytracer::addObject( SceneDagNode* parent, 
 		SceneObject* obj, Material* mat ) {
+	// Create a new node with SceneDagnode
 	SceneDagNode* node = new SceneDagNode( obj, mat );
 	node->parent = parent;
+	// Initialize the next to NULL (basically sibling), transformation applied to this node not applied to child 
 	node->next = NULL;
+	// Initialize the child to NULL, transformation applied to this node will be applied to child
 	node->child = NULL;
 	
 	// Add the object to the parent's child list, this means
@@ -38,6 +44,7 @@ SceneDagNode* Raytracer::addObject( SceneDagNode* parent,
 	if (parent->child == NULL) {
 		parent->child = node;
 	}
+	// Add it to the end of the child's linked list 
 	else {
 		parent = parent->child;
 		while (parent->next != NULL) {
@@ -51,15 +58,17 @@ SceneDagNode* Raytracer::addObject( SceneDagNode* parent,
 
 LightListNode* Raytracer::addLightSource( LightSource* light ) {
 	LightListNode* tmp = _lightSource;
+	// Add the light source to the node and return it 
 	_lightSource = new LightListNode( light, tmp );
 	return _lightSource;
 }
 
 void Raytracer::rotate( SceneDagNode* node, char axis, double angle ) {
+	// Create a matrix for transoformation 
 	Matrix4x4 rotation;
 	double toRadian = 2*M_PI/360.0;
 	int i;
-	
+	// QUESTION: Don't get the i 0 to 2 part 
 	for (i = 0; i < 2; i++) {
 		switch(axis) {
 			case 'x':
@@ -87,6 +96,7 @@ void Raytracer::rotate( SceneDagNode* node, char axis, double angle ) {
 				rotation[3][3] = 1;
 			break;
 		}
+		//Question What is this? 
 		if (i == 0) {
 		    node->trans = node->trans*rotation; 	
 			angle = -angle;
@@ -103,11 +113,23 @@ void Raytracer::translate( SceneDagNode* node, Vector3D trans ) {
 	translation[0][3] = trans[0];
 	translation[1][3] = trans[1];
 	translation[2][3] = trans[2];
+	// Update the node's transformation to multiply with the translation  (world to object) 
 	node->trans = node->trans*translation; 	
 	translation[0][3] = -trans[0];
 	translation[1][3] = -trans[1];
 	translation[2][3] = -trans[2];
+	// Update the inverse transformation to multiply with translation (object to world)
 	node->invtrans = translation*node->invtrans; 
+	// Question! How does he just change the direction of multiplication? What does it do? 
+	// Let A1' be final Matrix
+	// Let A1 be initial matrix for normal
+	// Let A2 be initial matrix for inverse
+	// Let t be translation matrix
+	// It's basically
+	// t' = A1t
+	// t  = tA2
+	// A2 = (A1)^(-1)
+	// Yea, still don't get it. 
 }
 
 void Raytracer::scale( SceneDagNode* node, Point3D origin, double factor[3] ) {
