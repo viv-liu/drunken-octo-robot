@@ -187,9 +187,53 @@ void Raytracer::computeShading( Ray3D& ray ) {
 		if (curLight == NULL) break;
 		// Each lightSource provides its own shading function.
 
-		// Implement shadows here if needed.
+		// SHADOWS
+		bool isInShadow = false;
+		
+		Point3D lightPos = curLight->light->get_position();
+		if(ray.intersection.none == false) {
+			// Construct a ray from intersection point on ray to light source
+			Point3D intersectPos = ray.intersection.point;
+			double dx = lightPos[0] - intersectPos[0];
+			double dy = lightPos[1] - intersectPos[1];
+			double dz = lightPos[2] - intersectPos[2];
+			double d = 0.01;
 
-		curLight->light->shade(ray);
+			// Set slight offset from intersection
+			intersectPos[0] = dx > 0 ? intersectPos[0] + d : intersectPos[0] - d;
+			intersectPos[1] = dy > 0 ? intersectPos[1] + d : intersectPos[1] - d;
+			intersectPos[2] = dz > 0 ? intersectPos[2] + d : intersectPos[2] - d;
+
+			Vector3D vec = Vector3D(dx, dy, dz);
+		
+			Ray3D shadowRay = Ray3D(intersectPos, vec);
+			traverseScene(_root, shadowRay);
+		
+			// Check if light intersects at intersectPos on object, if not then it's in shadow 
+			if(shadowRay.intersection.none == false) {
+				//double t_light = (lightPos[0] - shadowRay.origin[0]) / shadowRay.dir[0];
+				Point3D shadowRayIntersect = shadowRay.intersection.point;
+				std::cout << "Point ";
+				std::cout << shadowRayIntersect[0];
+				std::cout << shadowRayIntersect[1];
+				std::cout << shadowRayIntersect[2];
+				std::cout <<"\n";
+				if( //shadowRay.intersection.t_value < t_light-0.1) {
+				   shadowRayIntersect[0] > fmin(shadowRay.origin[0], lightPos[0]) &&
+				   shadowRayIntersect[0] < fmax(shadowRay.origin[0], lightPos[0]) &&
+				   shadowRayIntersect[1] > fmin(shadowRay.origin[1], lightPos[1]) &&
+				   shadowRayIntersect[1] < fmax(shadowRay.origin[1], lightPos[1]) &&
+				   shadowRayIntersect[2] > fmin(shadowRay.origin[2], lightPos[2]) &&
+				   shadowRayIntersect[2] < fmax(shadowRay.origin[2], lightPos[2])) {
+				   //shadowRayIntersect[0] != intersectPos[0] ||
+				   //shadowRayIntersect[1] != intersectPos[1] ||
+				   //shadowRayIntersect[2] != intersectPos[2]) {
+					isInShadow = true;
+				}
+			}	
+			//std::cout<< isInShadow;
+		}
+		curLight->light->shade(ray, isInShadow);
 		curLight = curLight->next;
 	}
 }
@@ -228,7 +272,7 @@ Colour Raytracer::shadeRay( Ray3D& ray ) {
 
 	// You'll want to call shadeRay recursively (with a different ray, 
 	// of course) here to implement reflection/refraction effects.  
-
+	
 	return col; 
 }	
 
@@ -249,14 +293,14 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view,
 			// image plane is at z = -1.
 			Point3D origin(0, 0, 0);
 			Point3D imagePlane;
-			//imagePlane[0] = (-double(width)/2 + 0.5 + j)/factor;
-			//imagePlane[1] = (-double(height)/2 + 0.5 + i)/factor;
+			imagePlane[0] = (-double(width)/2 + 0.5 + j)/factor;
+			imagePlane[1] = (-double(height)/2 + 0.5 + i)/factor;
 			// Anti-aliasing
-			imagePlane[0] = (-double(width)/2 + ((double)rand()/(double)RAND_MAX) + j)/factor;
-			imagePlane[1] = (-double(height)/2 + ((double)rand()/(double)RAND_MAX) + i)/factor;
+			//imagePlane[0] = (-double(width)/2 + ((double)rand()/(double)RAND_MAX) + j)/factor;
+			//imagePlane[1] = (-double(height)/2 + ((double)rand()/(double)RAND_MAX) + i)/factor;
 			imagePlane[2] = -1;
 			
-			std::cout << ((double)rand()/(double)RAND_MAX);
+			//std::cout << ((double)rand()/(double)RAND_MAX);
 			// TODO: Convert ray to world space and call 
 			Vector3D rayDir = Vector3D(imagePlane[0], imagePlane[1], imagePlane[2]);
 			rayDir = viewToWorld * rayDir;
@@ -306,7 +350,7 @@ int main(int argc, char* argv[])
 			12.8 );
 
 	// Defines a point light source.
-	raytracer.addLightSource( new PointLight(Point3D(0, 0, 5), 
+	raytracer.addLightSource( new PointLight(Point3D(5, 0, 0), 
 				Colour(0.9, 0.9, 0.9) ) );
 
 	// Add a unit square into the scene with material mat.
@@ -332,6 +376,8 @@ int main(int argc, char* argv[])
 	// Render it from a different point of view.
 	Point3D eye2(4, 2, 1);
 	Vector3D view2(-4, -2, -6);
+	//Point3D eye2(2, 0, 1);
+	//Vector3D view2(0, 0, -1);
 	raytracer.render(width, height, eye2, view2, up, fov, "view2.bmp");
 	
 	return 0;

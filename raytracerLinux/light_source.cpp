@@ -11,7 +11,7 @@
 #include <cmath>
 #include "light_source.h"
 
-void PointLight::shade( Ray3D& ray ) {
+void PointLight::shade( Ray3D& ray, bool isInShadow ) {
 	// TODO: implement this function to fill in values for ray.col 
 	// using phong shading.  Make sure your vectors are normalized, and
 	// clamp colour values to 1.0.
@@ -46,17 +46,20 @@ void PointLight::shade( Ray3D& ray ) {
 		double alpha = ray.intersection.mat->specular_exp;
 
 		// Compute ray colours using Phong model
-		ray.col[0] = mat_a[0] * I_a[0] +
-					 mat_d[0] * I_d[0] * fmax(0, s.dot(ray.intersection.normal)) +
-					 mat_s[0] * I_s[0] * pow(fmax(0, r.dot(b)), alpha);
+		ray.col[0] = mat_a[0] * I_a[0]; 
 		
-		ray.col[1] = mat_a[1] * I_a[1] +
-					 mat_d[1] * I_d[1] * fmax(0, s.dot(ray.intersection.normal)) +
-					 mat_s[1] * I_s[1] * pow(fmax(0, r.dot(b)), alpha);
+		ray.col[1] = mat_a[1] * I_a[1];
 
-		ray.col[2] = mat_a[2] * I_a[2] +
-					 mat_d[2] * I_d[2] * fmax(0, s.dot(ray.intersection.normal)) +
+		ray.col[2] = mat_a[2] * I_a[2];
+					 
+		if(isInShadow == false) {
+			ray.col[0] += mat_d[0] * I_d[0] * fmax(0, s.dot(ray.intersection.normal)) +
+					 mat_s[0] * I_s[0] * pow(fmax(0, r.dot(b)), alpha);
+			ray.col[1] += mat_d[1] * I_d[1] * fmax(0, s.dot(ray.intersection.normal)) +
+					 mat_s[1] * I_s[1] * pow(fmax(0, r.dot(b)), alpha);
+			ray.col[2] += mat_d[2] * I_d[2] * fmax(0, s.dot(ray.intersection.normal)) +
 					 mat_s[2] * I_s[2] * pow(fmax(0, r.dot(b)), alpha);
+		}
 
 		// Clamp values down to 1.0
 		ray.col.clamp();
