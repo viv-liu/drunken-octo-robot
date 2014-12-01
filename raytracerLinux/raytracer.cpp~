@@ -44,7 +44,8 @@
 #define NUMANTIALIASE 1
 #define RAYDEPTH 1// no reflection 
 #define HEADLIGHTS 0 // use point lights
-#define DODEPTHOFFIELD 0 //means no depth of field  
+#define DODEPTHOFFIELD 0 //means no depth of field 
+#define FOCALLENGTH 5 // focal length for depth of field 
 #endif 
 
 // Full of part 1 
@@ -57,6 +58,7 @@
 #define RAYDEPTH 1// no reflection  
 #define HEADLIGHTS 0 // use point lights
 #define DODEPTHOFFIELD 0 //means no depth of field  
+#define FOCALLENGTH 5 // focal length for depth of field 
 #endif 
 
 // Part 2: a) Soft Shadows 
@@ -69,10 +71,25 @@
 #define RAYDEPTH 1// no reflection 
 #define HEADLIGHTS 1 // use head lights (convert soft shadows to shadow) 
 #define DODEPTHOFFIELD 0 //means no depth of field  
+#define FOCALLENGTH 5 // focal length for depth of field 
 #endif 
 
-// TODO: BELOW IS STILL UNDER PROGRESS
-//TODO:  Part 2: b) Glossy Reflection 
+// Part 2: b) Depth of Field  (note: This takes long to run due to needed high number of aliasing. 
+#ifdef DEPTHOFFIELD 
+#define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual  
+#define NOSHADOW 0 // 0 means shadow works as usual  
+#define NUMLIGHTS 6.0 // useless for now 
+#define OFFSET 0.3   // offset not used cause no head lights 
+#define NUMANTIALIASE 30// The antialias number also affects depth of field!!
+#define RAYDEPTH 1// no reflection 
+#define HEADLIGHTS 0 // use point lights (no soft shadows) 
+#define DODEPTHOFFIELD 1 //means do depth of field 
+#define FOCALLENGTH 5 // focal length for depth of field 
+#endif 
+
+
+// TODO: BELOW IS STILL UNDER PROGRESS (works but reflect both ways for now) 
+//TODO:  Part 2: c) Glossy Reflection 
 #ifdef GLOSSYREFLECTION
 #define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual  
 #define NOSHADOW 1 // Turn off shadows  
@@ -82,19 +99,9 @@
 #define RAYDEPTH 2// reflection occurs 
 #define HEADLIGHTS 0 // use point lights (no soft shadows) 
 #define DODEPTHOFFIELD 0 //means no depth of field  
+#define FOCALLENGTH 5 // focal length for depth of field 
 #endif 
 
-// Part 2: c) Depth of Field 
-#ifdef DEPTHOFFIELD 
-#define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual  
-#define NOSHADOW 0 // 0 means shadow works as usual  
-#define NUMLIGHTS 6.0 // useless for now 
-#define OFFSET 0.3   // offset not used cause no head lights 
-#define NUMANTIALIASE 1 // no antialias 
-#define RAYDEPTH 1// no reflection 
-#define HEADLIGHTS 0 // use point lights (no soft shadows) 
-#define DODEPTHOFFIELD 1 //means do depth of field 
-#endif 
 
 // Part 2: d) Texture Mapping on sphere
 
@@ -415,8 +422,8 @@ void Raytracer::computeShading( Ray3D& ray )
 	tempPoint[2] = 1000*r[2]; 
 
 	// Now create the actual ray given the origin and ray direction (from the point origin given above) 
-	//Ray3D reflectRay = Ray3D(ray.intersection.point, r);
-	Ray3D reflectRay = Ray3D(tempPoint, -r); // note: This causes a recursive map into the object 
+	Ray3D reflectRay = Ray3D(ray.intersection.point, r);
+	//Ray3D reflectRay = Ray3D(tempPoint, -r); // note: This causes a recursive map into the object 
 						// if intersection implemented correctly. 
 	reflectRay.depth = ray.depth; // go to a reflectRay Depth of current ray depth 
 	reflectRay.viewToWorldRay3D = ray.viewToWorldRay3D; // useless for now 
@@ -597,9 +604,7 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view, Vecto
 			col[0] = 0; col[1] = 0;	col[2] = 0; 
 			srand(time(NULL));  
 			
-			// If need to do depth of field 
-		//TODO:	if(DODEPTHOFFIELD == 1) 
-			
+
 			for(int ij =0; ij < NUMANTIALIASE; ij++)
 			{
 				// Anti-aliasing
@@ -632,19 +637,52 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view, Vecto
 
 				// Construct the ray direction based on the points on the image plane computed 
 				Vector3D rayDir = Vector3D(imagePlane[0], imagePlane[1], imagePlane[2]);
+				// point Aimed is the position of the focal plane in specified direction 
+				Point3D pointAimed; // for depth of field (depends on focal length) 
+				Point3D start = eye; // initialize
+			// If need to do depth of field 
+			if(DODEPTHOFFIELD == 1) 
+			{
+				rayDir = viewToWorld * rayDir;
+				// normalize the ray direction 
+				rayDir.normalize();
+				// start further instead of the usual eye position 
+				pointAimed = eye + FOCALLENGTH*rayDir; 
+				double radius = 1; // radius of the lens 
 
+    				double du = rand()/double(RAND_MAX+1);//generating random number
+    				double dv = rand()/double(RAND_MAX+1);
+				// Need jitter position of start (important for depth of field) 
+				// creating new camera position(or ray start using jittering)
+
+				double u = radius * cos(fov); 
+				double v = radius * sin(fov); 
+				start[0]= eye[0] -(radius/2)*u-(radius/2)*v+radius*(du)*u+radius*(dv)*v; 
+				start[1]= eye[1] -(radius/2)*u-(radius/2)*v+radius*(du)*u+radius*(dv)*v; 
+				start[2]= eye[2] -(radius/2)*u-(radius/2)*v+radius*(du)*u+radius*(dv)*v; 
+			         //getting the new direction of ray
+				 rayDir = pointAimed - start;
+				 Ray3D ray = Ray3D(eye, rayDir);
+				 // normalize the ray direction 
+				 rayDir.normalize();
+				
+			}
+			
+			else
+			{
 				// update the ray Direction to change from the view matrix to the world matrix 
 				rayDir = viewToWorld * rayDir;
 				// normalize the ray direction 
 				rayDir.normalize();
-
+			}
+				Ray3D ray = Ray3D(start, rayDir);
 
 
 				// Now create the actual ray given the origin and ray direction (from the point origin given above) 
 				// THIS IS DEFINITELY WRONG AS IT IS ONLY
 				// INFLUENCED BY THE EYE DIRECTION AND NOT EYE POSITION 
 				//Ray3D ray = Ray3D(origin, rayDir); // original code : THIS IS WRONG!! YOU NEED START FROM EYE, NOT ORIGIN 
-				Ray3D ray = Ray3D(eye, rayDir);
+
 				ray.depth = RAYDEPTH; // go to a ray depth of RAYDEPTH 
 				ray.viewToWorldRay3D = viewToWorld; 
 
