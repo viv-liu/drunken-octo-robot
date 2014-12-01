@@ -7,6 +7,8 @@
 		implementations of util.h	
 
 ***********************************************************/
+// Includes definitions and implementations for points, vectors, matrices, 
+// and some structures for intersection and shading.  
 
 #include <cmath>
 #include "util.h"

@@ -12,8 +12,8 @@
 #include <iostream>
 #include "scene_object.h"
 
-bool UnitSquare::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
-		const Matrix4x4& modelToWorld ) {
+bool UnitSquare::intersect( Ray3D& ray, const Matrix4x4& worldToModel, const Matrix4x4& modelToWorld )
+{
 	// TODO: implement intersection code for UnitSquare, which is
 	// defined on the xy-plane, with vertices (0.5, 0.5, 0), 
 	// (-0.5, 0.5, 0), (-0.5, -0.5, 0), (0.5, -0.5, 0), and normal
@@ -30,6 +30,14 @@ bool UnitSquare::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 
 	// Compute t_value from z intersection at z = 0
 	double t_value = (-1*ObjectRay.origin[2])/ObjectRay.dir[2];
+	
+	// If the ray already has an intersection at an earlier t_value, return but don't update
+	// ray.intersection fields
+	if(ray.intersection.none == false) {
+		if(t_value > ray.intersection.t_value) {
+			return false;
+		}
+	}
 
 	// Compute coordinates
 	Vector3D intersection(ObjectRay.origin[0] + ObjectRay.dir[0] * t_value,
@@ -37,24 +45,16 @@ bool UnitSquare::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 							   0);
 	double x = ObjectRay.origin[0] + ObjectRay.dir[0] * t_value;
 	double y = ObjectRay.origin[1] + ObjectRay.dir[1] * t_value;
-	
-	// If the ray already has an intersection at an earlier t_value, return but don't update
-	// ray.intersection fields
-	if(ray.intersection.none == false) {
-		
-		if(t_value > ray.intersection.t_value) {
-			return false;
-		}
-	}
-	//std::cout << Worldt_value;
+
 	// Test x
 	if(x >= -0.5 && x <= 0.5) {
 		// Text y
 		if(y >= -0.5 && y <= 0.5) {
 			// We have an intersection
-			ray.intersection.point = modelToWorld * Point3D(x, y, 0);
 			ray.intersection.t_value = t_value;
+			ray.intersection.point = modelToWorld * Point3D(x, y, 0);
 			ray.intersection.normal = Vector3D(0, 0, 1);
+			
 			ray.intersection.normal = transNorm(worldToModel, ray.intersection.normal);
 			ray.intersection.normal.normalize();
 			ray.intersection.none = false;
@@ -119,9 +119,9 @@ bool UnitSphere::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 		double y = ObjectRay.origin[1] + ObjectRay.dir[1]*t_value;
 		double z = ObjectRay.origin[2] + ObjectRay.dir[2]*t_value;
 		
-		Vector3D intersection = Vector3D(x, y, z);		
+		Vector3D intersection = Vector3D(x, y, z);
+		ray.intersection.t_value = t_value;		
 		ray.intersection.point = modelToWorld * Point3D(x, y, z);
-		ray.intersection.t_value = t_value;	
 		ray.intersection.normal = transNorm(worldToModel, intersection);
 		ray.intersection.normal.normalize();		
 		ray.intersection.none = false;

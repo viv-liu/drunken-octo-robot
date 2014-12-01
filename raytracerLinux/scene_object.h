@@ -7,7 +7,12 @@
 		classes defining primitives in the scene
 
 ***********************************************************/
-
+// This file contains information about: 
+//---------------------
+// SceneObject
+// UnitSquare (child of SceneObject)
+// UnitSphere (child of SceneObject) 
+//---------------------
 #include "util.h"
 
 // All primitives should provide a intersection function.  
@@ -20,17 +25,14 @@ public:
 	virtual bool intersect( Ray3D&, const Matrix4x4&, const Matrix4x4& ) = 0;
 };
 
-// Example primitive you can create, this is a unit square on 
-// the xy-plane.
+// Example primitive you can create, this is a unit square on the xy-plane.
 class UnitSquare : public SceneObject {
 public:
-	bool intersect( Ray3D& ray, const Matrix4x4& worldToModel,
-			const Matrix4x4& modelToWorld );
+	bool intersect( Ray3D& ray, const Matrix4x4& worldToModel, const Matrix4x4& modelToWorld );
 };
 
 class UnitSphere : public SceneObject {
 public:
-	bool intersect( Ray3D& ray, const Matrix4x4& worldToModel,
-			const Matrix4x4& modelToWorld );
+	bool intersect( Ray3D& ray, const Matrix4x4& worldToModel, const Matrix4x4& modelToWorld );
 };
 
