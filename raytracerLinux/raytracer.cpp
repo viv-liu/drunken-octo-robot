@@ -235,30 +235,17 @@ void Raytracer::computeShading( Ray3D& ray )
 			intersectPos[2] = dz > 0 ? intersectPos[2] + d : intersectPos[2] - d;
 
 			Vector3D vec = Vector3D(dx, dy, dz);
-		
-			Ray3D shadowRay = Ray3D(intersectPos, vec);
+			double epsilon = 0.001; 
+			Ray3D shadowRay = Ray3D(lightPos, intersectPos-lightPos);
 			traverseScene(_root, shadowRay);
 		
 			// Check if light intersects at intersectPos on object, if not then it's in shadow 
 			if(shadowRay.intersection.none == false) {
 				//double t_light = (lightPos[0] - shadowRay.origin[0]) / shadowRay.dir[0];
 				Point3D shadowRayIntersect = shadowRay.intersection.point;
-				std::cout << "Point ";
-				std::cout << shadowRayIntersect[0];
-				std::cout << shadowRayIntersect[1];
-				std::cout << shadowRayIntersect[2];
-				std::cout <<"\n";
-				if( //shadowRay.intersection.t_value < t_light-0.1) {
-				   shadowRayIntersect[0] > fmin(shadowRay.origin[0], lightPos[0]) &&
-				   shadowRayIntersect[0] < fmax(shadowRay.origin[0], lightPos[0]) &&
-				   shadowRayIntersect[1] > fmin(shadowRay.origin[1], lightPos[1]) &&
-				   shadowRayIntersect[1] < fmax(shadowRay.origin[1], lightPos[1]) &&
-				   shadowRayIntersect[2] > fmin(shadowRay.origin[2], lightPos[2]) &&
-				   shadowRayIntersect[2] < fmax(shadowRay.origin[2], lightPos[2])) {
-				   //shadowRayIntersect[0] != intersectPos[0] ||
-				   //shadowRayIntersect[1] != intersectPos[1] ||
-				   //shadowRayIntersect[2] != intersectPos[2]) {
-					isInShadow = true;
+				if( shadowRay.intersection.t_value >= epsilon &&   shadowRay.intersection.t_value<= 1-epsilon)
+				{
+					isInShadow = true; 
 				}
 			}	
 			//std::cout<< isInShadow;
