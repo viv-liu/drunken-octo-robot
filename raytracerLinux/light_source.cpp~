@@ -7,6 +7,9 @@
 		implements light_source.h
 
 ***********************************************************/
+// Defines the basic light class.  You could define different types of 
+// lights, which shades the ray differently.  Point lights are sufficient 
+// for most scenes.  
 
 #include <cmath>
 #include "light_source.h"
@@ -34,14 +37,14 @@ void PointLight::shade( Ray3D& ray, bool isInShadow ) {
 		b.normalize();
 
 		// Material properties, easier access
-		Colour mat_a= Colour(ray.intersection.mat->ambient);
-		Colour mat_d = Colour(ray.intersection.mat->diffuse);
-		Colour mat_s = Colour(ray.intersection.mat->specular);
+		Colour mat_a = mat_a + Colour(ray.intersection.mat->ambient);
+		Colour mat_d = mat_d + Colour(ray.intersection.mat->diffuse);
+		Colour mat_s = mat_s + Colour(ray.intersection.mat->specular);
 		
 		// Light source properties
-		Colour I_a = this->_col_ambient;
-		Colour I_d = this->_col_diffuse;
-		Colour I_s = this->_col_specular;
+		Colour I_a =  I_a + this->_col_ambient;
+		Colour I_d =  I_d + this->_col_diffuse;
+		Colour I_s =  I_s + this->_col_specular;
 
 		double alpha = ray.intersection.mat->specular_exp;
 
@@ -53,12 +56,12 @@ void PointLight::shade( Ray3D& ray, bool isInShadow ) {
 		ray.col[2] = mat_a[2] * I_a[2];
 					 
 		if(isInShadow == false) {
-			ray.col[0] += mat_d[0] * I_d[0] * fmax(0, s.dot(ray.intersection.normal));// +
-					 //mat_s[0] * I_s[0] * pow(fmax(0, r.dot(b)), alpha);
-			ray.col[1] += mat_d[1] * I_d[1] * fmax(0, s.dot(ray.intersection.normal)); //+
-//					 mat_s[1] * I_s[1] * pow(fmax(0, r.dot(b)), alpha);
-			ray.col[2] += mat_d[2] * I_d[2] * fmax(0, s.dot(ray.intersection.normal)); // +
-//					 mat_s[2] * I_s[2] * pow(fmax(0, r.dot(b)), alpha);
+			ray.col[0] += mat_d[0] * I_d[0] * fmax(0, s.dot(ray.intersection.normal)) +
+					 mat_s[0] * I_s[0] * pow(fmax(0, r.dot(b)), alpha);
+			ray.col[1] += mat_d[1] * I_d[1] * fmax(0, s.dot(ray.intersection.normal)) +
+					 mat_s[1] * I_s[1] * pow(fmax(0, r.dot(b)), alpha);
+			ray.col[2] += mat_d[2] * I_d[2] * fmax(0, s.dot(ray.intersection.normal)) +
+					 mat_s[2] * I_s[2] * pow(fmax(0, r.dot(b)), alpha);
 		}
 
 		// Clamp values down to 1.0

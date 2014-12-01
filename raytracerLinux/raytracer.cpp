@@ -240,7 +240,8 @@ void Raytracer::computeShading( Ray3D& ray )
 			traverseScene(_root, shadowRay);
 		
 			// Check if light intersects at intersectPos on object, if not then it's in shadow 
-			if(shadowRay.intersection.none == false) {
+			if(shadowRay.intersection.none == false) 
+			{
 				//double t_light = (lightPos[0] - shadowRay.origin[0]) / shadowRay.dir[0];
 				Point3D shadowRayIntersect = shadowRay.intersection.point;
 				if( shadowRay.intersection.t_value >= epsilon &&   shadowRay.intersection.t_value<= 1-epsilon)
@@ -478,7 +479,9 @@ int main(int argc, char* argv[])
 	
 	// Defines a point light source with location in 3D as well as the color of the light.  (closed to white) 
 	// Add the point light source to the ray tracer's list of lightSource 
+	raytracer.addLightSource( new PointLight(Point3D(-5, 0, 0), Colour(0.9, 0.9, 0.9)));
 	raytracer.addLightSource( new PointLight(Point3D(5, 0, 0), Colour(0.9, 0.9, 0.9)));
+
 	// TODO: Make sure code works with multiple light sources 
 // raytracer.addLightSource( new PointLight(Point3D(5, 0, 0), Colour(0.4, 0.4, 0.4))); // Test: Darker light source 
 

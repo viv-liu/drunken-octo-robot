@@ -37,23 +37,23 @@ void PointLight::shade( Ray3D& ray, bool isInShadow ) {
 		b.normalize();
 
 		// Material properties, easier access
-		Colour mat_a= Colour(ray.intersection.mat->ambient);
-		Colour mat_d = Colour(ray.intersection.mat->diffuse);
-		Colour mat_s = Colour(ray.intersection.mat->specular);
+		Colour mat_a =  Colour(ray.intersection.mat->ambient);
+		Colour mat_d =  Colour(ray.intersection.mat->diffuse);
+		Colour mat_s =  Colour(ray.intersection.mat->specular);
 		
 		// Light source properties
-		Colour I_a = this->_col_ambient;
-		Colour I_d = this->_col_diffuse;
-		Colour I_s = this->_col_specular;
+		Colour I_a =   this->_col_ambient;
+		Colour I_d =  this->_col_diffuse;
+		Colour I_s =  this->_col_specular;
 
 		double alpha = ray.intersection.mat->specular_exp;
 
 		// Compute ray colours using Phong model
-		ray.col[0] = mat_a[0] * I_a[0]; 
+		ray.col[0] += mat_a[0] * I_a[0]; 
 		
-		ray.col[1] = mat_a[1] * I_a[1];
+		ray.col[1] += mat_a[1] * I_a[1];
 
-		ray.col[2] = mat_a[2] * I_a[2];
+		ray.col[2] += mat_a[2] * I_a[2];
 					 
 		if(isInShadow == false) {
 			ray.col[0] += mat_d[0] * I_d[0] * fmax(0, s.dot(ray.intersection.normal)) +
