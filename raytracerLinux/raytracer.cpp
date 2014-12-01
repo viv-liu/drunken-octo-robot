@@ -29,10 +29,10 @@
 //----------------------------------------------------------------------------------------------------------
 // Note: Uncomment if want them, note: can only uncomment one of these at a time 
 //#define SIGNATURE 1	// only ambient components 
-#define PARTONEFULL 1 	// has antialias, without shadows 
+//#define PARTONEFULL 1 	// has antialias, without shadows 
 //#define SOFTSHADOW 1 // demonstrates soft shadows
 //#define GLOSSYREFLECTION 1
-//#define DEPTHOFFIELD 1 
+#define DEPTHOFFIELD 1 
 //----------------------------------------------------------------------------------------------------------
 
 // Part 1
