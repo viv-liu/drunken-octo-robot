@@ -14,7 +14,7 @@
 
 #include "raytracer.h"
 #include "bmp_io.h"
-#include <cmath>
+#include <cmath> // for fmax() 
 #include <iostream>
 #include <cstdlib>
 #include <time.h> // for random 
@@ -31,7 +31,8 @@
 //#define SIGNATURE 1	// only ambient components 
 //#define PARTONEFULL 1 	// has antialias, without shadows 
 //#define SOFTSHADOW 1 // demonstrates soft shadows
-#define REFLECTION 1
+#define GLOSSYREFLECTION 1
+//#define DEPTHOFFIELD 1 
 //----------------------------------------------------------------------------------------------------------
 
 // Part 1
@@ -43,6 +44,7 @@
 #define NUMANTIALIASE 1
 #define RAYDEPTH 1// no reflection 
 #define HEADLIGHTS 0 // use point lights
+#define DODEPTHOFFIELD 0 //means no depth of field  
 #endif 
 
 // Full of part 1 
@@ -54,9 +56,10 @@
 #define NUMANTIALIASE 5
 #define RAYDEPTH 1// no reflection  
 #define HEADLIGHTS 0 // use point lights
+#define DODEPTHOFFIELD 0 //means no depth of field  
 #endif 
 
-// Part 2: a) Soft shadows 
+// Part 2: a) Soft Shadows 
 #ifdef SOFTSHADOW 
 #define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual  
 #define NOSHADOW 0 // 0 means shadow works as usual  
@@ -65,20 +68,33 @@
 #define NUMANTIALIASE 1 // no antialias for soft shadow 
 #define RAYDEPTH 1// no reflection 
 #define HEADLIGHTS 1 // use head lights (convert soft shadows to shadow) 
+#define DODEPTHOFFIELD 0 //means no depth of field  
 #endif 
 
-// Part 2: b) Reflection 
-#ifdef REFLECTION
+// TODO: BELOW IS STILL UNDER PROGRESS
+//TODO:  Part 2: b) Glossy Reflection 
+#ifdef GLOSSYREFLECTION
 #define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual  
-#define NOSHADOW 0 // 0 means shadow works as usual  
+#define NOSHADOW 1 // Turn off shadows  
 #define NUMLIGHTS 6.0 // useless for now 
 #define OFFSET 0.3   // offset not used cause no head lights 
 #define NUMANTIALIASE 1 // no antialias 
 #define RAYDEPTH 2// reflection occurs 
 #define HEADLIGHTS 0 // use point lights (no soft shadows) 
+#define DODEPTHOFFIELD 0 //means no depth of field  
 #endif 
 
 // Part 2: c) Depth of Field 
+#ifdef DEPTHOFFIELD 
+#define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual  
+#define NOSHADOW 0 // 0 means shadow works as usual  
+#define NUMLIGHTS 6.0 // useless for now 
+#define OFFSET 0.3   // offset not used cause no head lights 
+#define NUMANTIALIASE 1 // no antialias 
+#define RAYDEPTH 1// no reflection 
+#define HEADLIGHTS 0 // use point lights (no soft shadows) 
+#define DODEPTHOFFIELD 1 //means do depth of field 
+#endif 
 
 // Part 2: d) Texture Mapping on sphere
 
@@ -399,8 +415,9 @@ void Raytracer::computeShading( Ray3D& ray )
 	tempPoint[2] = 1000*r[2]; 
 
 	// Now create the actual ray given the origin and ray direction (from the point origin given above) 
-	//Ray3D reflectRay = Ray3D(tempPoint, -r);
-	Ray3D reflectRay = Ray3D(ray.intersection.point, r);
+	//Ray3D reflectRay = Ray3D(ray.intersection.point, r);
+	Ray3D reflectRay = Ray3D(tempPoint, -r); // note: This causes a recursive map into the object 
+						// if intersection implemented correctly. 
 	reflectRay.depth = ray.depth; // go to a reflectRay Depth of current ray depth 
 	reflectRay.viewToWorldRay3D = ray.viewToWorldRay3D; // useless for now 
 	// Get the color for this pixel by calling the shade ray function 
@@ -408,9 +425,32 @@ void Raytracer::computeShading( Ray3D& ray )
 	Colour colTwo = shadeRay(reflectRay); 
 
 	// Update colour of current ray (take into account lose of energy each time) 
+
 	ray.col[0] += colTwo[0]/(RAYDEPTH - reflectRay.depth); // need divide by remaining depth of recursion each time to lose energy 
 	ray.col[1] += colTwo[1]/(RAYDEPTH - reflectRay.depth); 
 	ray.col[2] += colTwo[2]/(RAYDEPTH - reflectRay.depth); 
+
+	// pg 103/785 in pdf 
+	// Multiply with specular reflection to lose energy instead of the reflect ray 
+/*
+	if(reflectRay.intersection.none == false) 
+	{
+		Vector3D l2 = Vector3D(reflectRay.origin - reflectRay.intersection.point);
+ //l2 = l; // TEMP
+		l2.normalize();
+		Vector3D r2 = Vector3D(-1 * l2 + 2 * reflectRay.intersection.normal.dot(l2) * reflectRay.intersection.normal);
+ //r2 = r; // TEMP 
+		r2.normalize();
+			double alpha = reflectRay.intersection.mat->specular_exp;
+			// Reflection of s across n
+			// Intersection point to camera position
+		Colour mat_s =  Colour(reflectRay.intersection.mat->specular);
+//		Colour mat_d =  Colour(ray.intersection.mat->diffuse);
+		ray.col[0] += colTwo[0]*mat_s[0]* pow(fmax(0, r2.dot(l2)), alpha); // need divide by remaining depth of recursion each time to lose energy 
+		ray.col[1] += colTwo[1]*mat_s[1]*pow(fmax(0, r2.dot(l2)), alpha); 
+		ray.col[2] += colTwo[2]*mat_s[2]* pow(fmax(0, r2.dot(l2)), alpha); 
+	}
+*/
 	ray.col.clamp();
 
 }
@@ -556,6 +596,10 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view, Vecto
 			Colour col; // initialize col 
 			col[0] = 0; col[1] = 0;	col[2] = 0; 
 			srand(time(NULL));  
+			
+			// If need to do depth of field 
+		//TODO:	if(DODEPTHOFFIELD == 1) 
+			
 			for(int ij =0; ij < NUMANTIALIASE; ij++)
 			{
 				// Anti-aliasing
@@ -681,8 +725,10 @@ int main(int argc, char* argv[])
 //Material gold( Colour(0.3, 0.3, 0.3), Colour(0.75164, 0.60648, 0.22648), Colour(0.628281, 0.555802, 0.366065), 1); // Test: Material with lower exponent 
 	// Material 2: Jade
 	Material jade( Colour(0, 0, 0), Colour(0.54, 0.89, 0.63), Colour(0.316228, 0.316228, 0.316228), 12.8 );
-	
-	Material mud( Colour(0.6, 0.0, 0.0), Colour(0.75164, 0.60648, 0.22648),Colour(0.628281, 0.555802, 0.366065),51.2);
+
+//	Material jade( Colour(0, 0, 0), Colour(0.54, 0.89, 0.63), Colour(0.316228, 0.316228, 0.316228), 1 );	
+
+	Material mud( Colour(0.6, 0.0, 0.0), Colour(0.75164, 0.60648, 0.22648),Colour(0.628281, 0.555802, 0.366065),32.2);
 
 	// NOTE: Can only use HeadLight or Light Source but not both! 
 if(HEADLIGHTS==1)
