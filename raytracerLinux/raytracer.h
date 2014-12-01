@@ -169,6 +169,9 @@ public:
 	// Add a light source to the ray tracer, it appends it to the linked list of lights 
 	LightListNode* addLightSource( LightSource* light );
 
+
+	LightListNode* addHeadLightSource(double posX, double posY, double posZ, double colorX, double colorY, double colorZ );
+
 	// Transformation functions are implemented by right-multiplying 
 	// the transformation matrix to the node's transformation matrix.
 	

@@ -18,6 +18,9 @@
 #include <iostream>
 #include <cstdlib>
 
+// For offset Shadowing
+#define NUMLIGHTS 6.0 // must stay 6 unless add more or less points to check 
+#define OFFSET 0.3   // a reasonable offset of light 
 //----------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------
@@ -83,6 +86,19 @@ LightListNode* Raytracer::addLightSource( LightSource* light ) {
 							// make the original _lightSource in ray tracer point to the new head of the node 
 	return _lightSource;	 // return the head of the linked list 
 }
+
+
+LightListNode* Raytracer::addHeadLightSource(double posX, double posY, double posZ, double colorX, double colorY, double colorZ ) {
+
+	this->addLightSource( new PointLight(Point3D(posX + OFFSET, posY, posZ), Colour(colorX/NUMLIGHTS, colorY/NUMLIGHTS, colorZ/NUMLIGHTS)));
+	this->addLightSource( new PointLight(Point3D(posX - OFFSET, posY, posZ), Colour(colorX/NUMLIGHTS, colorY/NUMLIGHTS, colorZ/NUMLIGHTS)));
+	this->addLightSource( new PointLight(Point3D(posX, posY + OFFSET, posZ), Colour(colorX/NUMLIGHTS, colorY/NUMLIGHTS, colorZ/NUMLIGHTS)));
+	this->addLightSource( new PointLight(Point3D(posX, posY - OFFSET, posZ), Colour(colorX/NUMLIGHTS, colorY/NUMLIGHTS, colorZ/NUMLIGHTS)));
+	this->addLightSource( new PointLight(Point3D(posX, posY , posZ + OFFSET ), Colour(colorX/NUMLIGHTS, colorY/NUMLIGHTS, colorZ/NUMLIGHTS)));
+	this->addLightSource( new PointLight(Point3D(posX, posY , posZ - OFFSET), Colour(colorX/NUMLIGHTS, colorY/NUMLIGHTS, colorZ/NUMLIGHTS)));
+	return _lightSource;	 // return the head of the linked list 
+}
+
 
 //----------------------------------------------------------------------------------------------------------
 // Transformation on each individual scene object given the SceneDagNode that contains that scene object
@@ -479,8 +495,12 @@ int main(int argc, char* argv[])
 	
 	// Defines a point light source with location in 3D as well as the color of the light.  (closed to white) 
 	// Add the point light source to the ray tracer's list of lightSource 
-	raytracer.addLightSource( new PointLight(Point3D(-5, 0, 0), Colour(0.9, 0.9, 0.9)));
-	raytracer.addLightSource( new PointLight(Point3D(5, 0, 0), Colour(0.9, 0.9, 0.9)));
+//	raytracer.addLightSource( new PointLight(Point3D(-5, 0, 0), Colour(0.9, 0.9, 0.9)));
+//	raytracer.addLightSource( new PointLight(Point3D(5, 0, 0), Colour(0.9, 0.9, 0.9)));
+
+	raytracer.addHeadLightSource( -5, 0, 0, 0.9, 0.9, 0.9);
+//	raytracer.addHeadLightSource( 5, 0, 0, 0.9, 0.9, 0.9);
+
 
 	// TODO: Make sure code works with multiple light sources 
 // raytracer.addLightSource( new PointLight(Point3D(5, 0, 0), Colour(0.4, 0.4, 0.4))); // Test: Darker light source 
