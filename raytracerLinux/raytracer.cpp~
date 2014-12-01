@@ -654,7 +654,7 @@ int main(int argc, char* argv[])
 
 	// Create a factor for scaling (ScaleX, ScaleY, ScaleZ) 
 	double factor1[3] = { 1.0, 2.0, 1.0 };
-	double factor2[3] = { 8.0, 8.0, 8.0 };
+	double factor2[3] = { 6.0, 6.0, 6.0 };
 
 	// Do transformations on sphere 
 	// Add the translation matrix to the sphere's list of transformation and inverse transformation 

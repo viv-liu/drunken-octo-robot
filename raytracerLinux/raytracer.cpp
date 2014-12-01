@@ -34,7 +34,7 @@ static bool headLightPresent = false; // this is useless, for now
 // TODO: UNCOMMENT ABOVE AND COMMENT BELOW 
 //#define NUMANTIALIASE 1 // temporary 
 
-#define RAYDEPTH 2// for reflection , note: Value of 1 means no reflection, CANNOT BE 0, if not division by 0 when losing energy calculation 
+#define RAYDEPTH 3// for reflection , note: Value of 1 means no reflection, CANNOT BE 0, if not division by 0 when losing energy calculation 
 //----------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------
@@ -695,7 +695,7 @@ std::cout << "View2.bmp done" << std::endl;
 	Vector3D view3(1, 0, -1);
 	raytracer.render(width, height, eye3, view3, up, fov, "view3.bmp");	// output the image with name
 std::cout << "View3.bmp done" << std::endl; 
-	Point3D eye4(-4, 0, -6);
+	Point3D eye4(-2, 0, -6);
 	Vector3D view4(1, 0, 0);
 	raytracer.render(width, height, eye4, view4, up, fov, "view4.bmp");	// output the image with name
 std::cout << "View4.bmp done" << std::endl; 
