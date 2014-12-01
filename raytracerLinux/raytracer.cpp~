@@ -337,9 +337,13 @@ void Raytracer::computeShading( Ray3D& ray )
 //	r = ray.viewToWorldRay3D * r; // note: this matrix is only for eye, to generate one for r, compute all over again
 	// normalize the ray direction 
 	r.normalize();
+	Point3D tempPoint = ray.intersection.point; 
+	tempPoint[0] = 1000*r[0]; 
+	tempPoint[1] = 1000*r[1]; 
+	tempPoint[2] = 1000*r[2]; 
 
 	// Now create the actual ray given the origin and ray direction (from the point origin given above) 
-	Ray3D reflectRay = Ray3D(ray.intersection.point, r);
+	Ray3D reflectRay = Ray3D(tempPoint, -r);
 	reflectRay.depth = ray.depth; // go to a reflectRay Depth of current ray depth 
 	reflectRay.viewToWorldRay3D = ray.viewToWorldRay3D; // useless for now 
 	// Get the color for this pixel by calling the shade ray function 
@@ -668,7 +672,7 @@ int main(int argc, char* argv[])
 	raytracer.rotate(sphere, 'z', 45); 
 	raytracer.scale(sphere, Point3D(0, 0, 0), factor1);
 	// Add the translation matrix to the sphere's list of transformation and inverse transformation 
-	raytracer.translate(sphereTwo, Vector3D(1, 1, -5));	
+	raytracer.translate(sphereTwo, Vector3D(2, 2, -5));	
 	// Similarly, add rotations and scaling 
 	raytracer.rotate(sphereTwo, 'x', -30); 
 	raytracer.rotate(sphereTwo, 'z', 25); 
