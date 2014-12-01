@@ -20,18 +20,21 @@
 #include <time.h> // for random 
 
 // FOR DEBUGGING, NEED TO RUN CODE SLOWER, 
-// 1. CHANGE THE LIGHT TO POINT LIGHT INSTEAD OF HEADLIGHT
-// 2. CHANGE NUMANTIALIASE TO 1
+// 1. CHANGE THE LIGHT TO POINT LIGHT INSTEAD OF HEADLIGHT (no softshadow)
+// 2. CHANGE NUMANTIALIASE TO 1				(worst antialiasing) 
+
 
 
 // For offset Shadowing
+static bool headLightPresent = false; // this is useless, for now 
+
 #define NUMLIGHTS 6.0 // must stay 6 unless add more or less points to check 
 #define OFFSET 0.3   // a reasonable offset of light 
-#define NUMANTIALIASE 5
+#define NUMANTIALIASE 1
 // TODO: UNCOMMENT ABOVE AND COMMENT BELOW 
 //#define NUMANTIALIASE 1 // temporary 
 
-#define RAYDEPTH 1// for reflection , note: Value of 1 means no reflection, CANNOT BE 0, if not division by 0 when losing energy calculation 
+#define RAYDEPTH 2// for reflection , note: Value of 1 means no reflection, CANNOT BE 0, if not division by 0 when losing energy calculation 
 //----------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------
@@ -100,7 +103,7 @@ LightListNode* Raytracer::addLightSource( LightSource* light ) {
 
 
 LightListNode* Raytracer::addHeadLightSource(double posX, double posY, double posZ, double colorX, double colorY, double colorZ ) {
-
+headLightPresent = true; 
 	this->addLightSource( new PointLight(Point3D(posX + OFFSET, posY, posZ), Colour(colorX/NUMLIGHTS, colorY/NUMLIGHTS, colorZ/NUMLIGHTS)));
 	this->addLightSource( new PointLight(Point3D(posX - OFFSET, posY, posZ), Colour(colorX/NUMLIGHTS, colorY/NUMLIGHTS, colorZ/NUMLIGHTS)));
 	this->addLightSource( new PointLight(Point3D(posX, posY + OFFSET, posZ), Colour(colorX/NUMLIGHTS, colorY/NUMLIGHTS, colorZ/NUMLIGHTS)));
@@ -280,8 +283,8 @@ void Raytracer::computeShading( Ray3D& ray )
 				}
 			}
 			// It does not intersect anything on the way to this light, compute the reflection of the light if it does hit something 	
-			else
-			{
+		//	else // DONT NEED THIS ELSE STATEMENT!!!!!!!!!!!!!!!!!! REFLECT EVERYTHING!!
+		//	{
 				// TODO: CHANGE TO RAY INTERSECTION POINT MAYBE 
 				Vector3D l = Vector3D(intersectPos-lightPos);
 //				Vector3D l = Vector3D(lightPos - intersectPos);
@@ -303,11 +306,13 @@ void Raytracer::computeShading( Ray3D& ray )
 				Colour colTwo = shadeRay(reflectRay); 
 
 				// Update colour of current ray (take into account lose of energy each time) 
-				ray.col[0] += colTwo[0]/(RAYDEPTH - reflectRay.depth); // need divide by remaining depth of recursion each time to lose energy 
-				ray.col[1] += colTwo[1]/(RAYDEPTH - reflectRay.depth); 
-				ray.col[2] += colTwo[2]/(RAYDEPTH - reflectRay.depth); 
+				double numLightsTemp = 1; 
+				if(headLightPresent) numLightsTemp =  NUMLIGHTS; 
+				ray.col[0] += colTwo[0]/((RAYDEPTH - reflectRay.depth)*numLightsTemp); // need divide by remaining depth of recursion each time to lose energy 
+				ray.col[1] += colTwo[1]/((RAYDEPTH - reflectRay.depth)*numLightsTemp); 
+				ray.col[2] += colTwo[2]/((RAYDEPTH - reflectRay.depth)*numLightsTemp); 
 				ray.col.clamp();
-			}
+		//	}
 			//std::cout<< isInShadow;
 		}
 		curLight->light->shade(ray, isInShadow);
@@ -612,12 +617,17 @@ int main(int argc, char* argv[])
 	// Material 2: Jade
 	Material jade( Colour(0, 0, 0), Colour(0.54, 0.89, 0.63), Colour(0.316228, 0.316228, 0.316228), 12.8 );
 	
+//	Material mud( Colour(0.6, 0.0, 0.0), Colour(0.75164, 0.60648, 0.22648),Colour(0.628281, 0.555802, 0.366065),51.2);
+
 	// Defines a point light source with location in 3D as well as the color of the light.  (closed to white) 
 	// Add the point light source to the ray tracer's list of lightSource 
-	raytracer.addLightSource( new PointLight(Point3D(-5, 0, 0), Colour(0.9, 0.9, 0.9)));
-//	raytracer.addLightSource( new PointLight(Point3D(5, 0, 0), Colour(0.9, 0.9, 0.9)));
+//	raytracer.addLightSource( new PointLight(Point3D(-5, 0, 0), Colour(0.9, 0.9, 0.9)));
+	raytracer.addLightSource( new PointLight(Point3D(5, 0, 0), Colour(0.9, 0.9, 0.9)));
 // TODO: UNCOMMENT BELOW AND COMMENT ABOVE 
-//	raytracer.addHeadLightSource( -5, 0, 0, 0.9, 0.9, 0.9);
+// NOTE: Can only use HeadLight or Light Source but not both! 
+	// Note: Below takes way longer with reflection implemented 
+	// DEBUG: Below doesn't work with reflection cause too many 
+//	raytracer.addHeadLightSource( -5, 0, 0, 0.9, 0.9, 0.9); 
 //	raytracer.addHeadLightSource( 5, 0, 0, 0.9, 0.9, 0.9);
 
 
@@ -631,6 +641,7 @@ int main(int argc, char* argv[])
 						// (SceneObject, Material) 
 	SceneDagNode* sphere = raytracer.addObject( new UnitSphere(), &gold );
 	SceneDagNode* plane = raytracer.addObject( new UnitSquare(), &jade );
+//	SceneDagNode* sphereTwo = raytracer.addObject( new UnitSphere(), &mud );
 	// now root has 2 childs, both the unitSphere and the unitSquare 
 	// but really it is
 	// root->child->Sphere
@@ -652,6 +663,12 @@ int main(int argc, char* argv[])
 	raytracer.rotate(sphere, 'x', -45); 
 	raytracer.rotate(sphere, 'z', 45); 
 	raytracer.scale(sphere, Point3D(0, 0, 0), factor1);
+	// Add the translation matrix to the sphere's list of transformation and inverse transformation 
+//	raytracer.translate(sphereTwo, Vector3D(1, 1, -5));	
+	// Similarly, add rotations and scaling 
+//	raytracer.rotate(sphereTwo, 'x', -30); 
+//	raytracer.rotate(sphereTwo, 'z', 25); 
+//	raytracer.scale(sphereTwo, Point3D(0, 0, 0), factor1);
 
 	// Similarly, do transformations on the plane 
 	raytracer.translate(plane, Vector3D(0, 0, -7));	
@@ -665,7 +682,7 @@ int main(int argc, char* argv[])
 	// Note: Render creates and flushes the pixel buffer in 2 different functions (it creates the pixel buffer in render() and flushes it in flushPixelBuffer() that is called by render() 
 	raytracer.render(width, height, eye, view, up, fov, "view1.bmp");	// output the image with name view1.bmp
 	
-
+std::cout << "View1.bmp done" << std::endl; 
 	// Render it from a different point of view.
 	Point3D eye2(4, 2, 1);
 	Vector3D view2(-4, -2, -6);
@@ -673,15 +690,15 @@ int main(int argc, char* argv[])
 	//Vector3D view2(0, 0, -1);
 	raytracer.render(width, height, eye2, view2, up, fov, "view2.bmp");	// output the image with name view2.bmp 
 
-
+std::cout << "View2.bmp done" << std::endl; 
 	Point3D eye3(-1, 0, 0);
 	Vector3D view3(1, 0, -1);
 	raytracer.render(width, height, eye3, view3, up, fov, "view3.bmp");	// output the image with name
-	
-	Point3D eye4(-2, 0, -6);
+std::cout << "View3.bmp done" << std::endl; 
+	Point3D eye4(-4, 0, -6);
 	Vector3D view4(1, 0, 0);
 	raytracer.render(width, height, eye4, view4, up, fov, "view4.bmp");	// output the image with name
-
+std::cout << "View4.bmp done" << std::endl; 
 	return 0;
 }
 
