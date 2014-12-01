@@ -34,7 +34,7 @@ static bool headLightPresent = false; // this is useless, for now
 // TODO: UNCOMMENT ABOVE AND COMMENT BELOW 
 //#define NUMANTIALIASE 1 // temporary 
 
-#define RAYDEPTH 3// for reflection , note: Value of 1 means no reflection, CANNOT BE 0, if not division by 0 when losing energy calculation 
+#define RAYDEPTH 2// for reflection , note: Value of 1 means no reflection, CANNOT BE 0, if not division by 0 when losing energy calculation 
 //----------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------
@@ -285,6 +285,8 @@ void Raytracer::computeShading( Ray3D& ray )
 			// It does not intersect anything on the way to this light, compute the reflection of the light if it does hit something 	
 		//	else // DONT NEED THIS ELSE STATEMENT!!!!!!!!!!!!!!!!!! REFLECT EVERYTHING!!
 		//	{
+/* // This is only a hack for reflection
+// can fix by generating every ray as if it is the camera position. 
 				// TODO: CHANGE TO RAY INTERSECTION POINT MAYBE 
 				Vector3D l = Vector3D(intersectPos-lightPos);
 //				Vector3D l = Vector3D(lightPos - intersectPos);
@@ -312,6 +314,7 @@ void Raytracer::computeShading( Ray3D& ray )
 				ray.col[1] += colTwo[1]/((RAYDEPTH - reflectRay.depth)*numLightsTemp); 
 				ray.col[2] += colTwo[2]/((RAYDEPTH - reflectRay.depth)*numLightsTemp); 
 				ray.col.clamp();
+*/
 		//	}
 			//std::cout<< isInShadow;
 		}
@@ -319,8 +322,9 @@ void Raytracer::computeShading( Ray3D& ray )
 		curLight = curLight->next;
 	}
 	//Done looping through all lights, now compute reflection 
-/*
-// THIS IS WRONG 
+
+// This is correct! You just need to only reflect if intersection point is on reflective objects 
+// The r vector is computed correctly
 	// Intersection point to point light source position
 	Vector3D l = Vector3D(ray.origin - ray.intersection.point);
 	l.normalize();
@@ -329,15 +333,15 @@ void Raytracer::computeShading( Ray3D& ray )
 	Vector3D r = Vector3D(-1 * l + 2 * ray.intersection.normal.dot(l) * ray.intersection.normal);
 	
 // Uncomment below to check later if changes anything 
-	// update the ray Direction to change from the view matrix to the world matrix 
-	r = ray.viewToWorldRay3D * r;
+// update the ray Direction to change from the view matrix to the world matrix 
+//	r = ray.viewToWorldRay3D * r; // note: this matrix is only for eye, to generate one for r, compute all over again
 	// normalize the ray direction 
 	r.normalize();
 
 	// Now create the actual ray given the origin and ray direction (from the point origin given above) 
 	Ray3D reflectRay = Ray3D(ray.intersection.point, r);
 	reflectRay.depth = ray.depth; // go to a reflectRay Depth of current ray depth 
-	reflectRay.viewToWorldRay3D = ray.viewToWorldRay3D; 
+	reflectRay.viewToWorldRay3D = ray.viewToWorldRay3D; // useless for now 
 	// Get the color for this pixel by calling the shade ray function 
 	// shadeRay(ray) to generate pixel colour. 	
 	Colour colTwo = shadeRay(reflectRay); 
@@ -347,7 +351,7 @@ void Raytracer::computeShading( Ray3D& ray )
 	ray.col[1] += colTwo[1]/(RAYDEPTH - reflectRay.depth); 
 	ray.col[2] += colTwo[2]/(RAYDEPTH - reflectRay.depth); 
 	ray.col.clamp();
-*/
+
 }
 
 //----------------------------------------------------------------------------------------------------------
@@ -617,7 +621,7 @@ int main(int argc, char* argv[])
 	// Material 2: Jade
 	Material jade( Colour(0, 0, 0), Colour(0.54, 0.89, 0.63), Colour(0.316228, 0.316228, 0.316228), 12.8 );
 	
-//	Material mud( Colour(0.6, 0.0, 0.0), Colour(0.75164, 0.60648, 0.22648),Colour(0.628281, 0.555802, 0.366065),51.2);
+	Material mud( Colour(0.6, 0.0, 0.0), Colour(0.75164, 0.60648, 0.22648),Colour(0.628281, 0.555802, 0.366065),51.2);
 
 	// Defines a point light source with location in 3D as well as the color of the light.  (closed to white) 
 	// Add the point light source to the ray tracer's list of lightSource 
@@ -641,7 +645,7 @@ int main(int argc, char* argv[])
 						// (SceneObject, Material) 
 	SceneDagNode* sphere = raytracer.addObject( new UnitSphere(), &gold );
 	SceneDagNode* plane = raytracer.addObject( new UnitSquare(), &jade );
-//	SceneDagNode* sphereTwo = raytracer.addObject( new UnitSphere(), &mud );
+	SceneDagNode* sphereTwo = raytracer.addObject( new UnitSphere(), &mud );
 	// now root has 2 childs, both the unitSphere and the unitSquare 
 	// but really it is
 	// root->child->Sphere
@@ -664,11 +668,11 @@ int main(int argc, char* argv[])
 	raytracer.rotate(sphere, 'z', 45); 
 	raytracer.scale(sphere, Point3D(0, 0, 0), factor1);
 	// Add the translation matrix to the sphere's list of transformation and inverse transformation 
-//	raytracer.translate(sphereTwo, Vector3D(1, 1, -5));	
+	raytracer.translate(sphereTwo, Vector3D(2, 2, -5));	
 	// Similarly, add rotations and scaling 
-//	raytracer.rotate(sphereTwo, 'x', -30); 
-//	raytracer.rotate(sphereTwo, 'z', 25); 
-//	raytracer.scale(sphereTwo, Point3D(0, 0, 0), factor1);
+	raytracer.rotate(sphereTwo, 'x', -30); 
+	raytracer.rotate(sphereTwo, 'z', 25); 
+	raytracer.scale(sphereTwo, Point3D(0, 0, 0), factor1);
 
 	// Similarly, do transformations on the plane 
 	raytracer.translate(plane, Vector3D(0, 0, -7));	
