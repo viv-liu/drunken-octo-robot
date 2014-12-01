@@ -17,10 +17,17 @@
 #include <cmath>
 #include <iostream>
 #include <cstdlib>
+#include <time.h> // for random 
+
+// FOR DEBUGGING, NEED TO RUN CODE SLOWER, 
+// 1. CHANGE THE LIGHT TO POINT LIGHT INSTEAD OF HEADLIGHT
+// 2. CHANGE NUMANTIALIASE TO 1
+
 
 // For offset Shadowing
 #define NUMLIGHTS 6.0 // must stay 6 unless add more or less points to check 
 #define OFFSET 0.3   // a reasonable offset of light 
+#define NUMANTIALIASE 5
 //----------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------
@@ -404,29 +411,44 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view, Vecto
 			Point3D origin(0, 0, 0); // Create a point called origin 
 			Point3D imagePlane;	// the image plane where it is some distance away from the camera 
 						// It initializes the ray direction 
+	// Original Using Center 
 			imagePlane[0] = (-double(width)/2 + 0.5 + j)/factor; // x position of image plane (factor influences the final width of the image plane) 
 			imagePlane[1] = (-double(height)/2 + 0.5 + i)/factor; // y position of image plane 
-// Anti-aliasing
-//imagePlane[0] = (-double(width)/2 + ((double)rand()/(double)RAND_MAX) + j)/factor;
-//imagePlane[1] = (-double(height)/2 + ((double)rand()/(double)RAND_MAX) + i)/factor;
-			imagePlane[2] = -1; // z position of image plane 
+			Colour col; // initialize col 
+			col[0] = 0; col[1] = 0;	col[2] = 0; 
+			srand(time(NULL));  
+			for(int ij =0; ij < NUMANTIALIASE; ij++)
+			{
+				// Anti-aliasing
+				imagePlane[0] = (-double(width)/2 + ((double)rand()/(double)RAND_MAX) + j)/factor;
+				imagePlane[1] = (-double(height)/2 + ((double)rand()/(double)RAND_MAX) + i)/factor;
+				imagePlane[2] = -1; // z position of image plane 
 			
-//std::cout << ((double)rand()/(double)RAND_MAX);
-// TODO: Convert ray to world space and call 
+				//std::cout << ((double)rand()/(double)RAND_MAX);
+				// TODO: Convert ray to world space and call 
 
-			// Construct the ray direction based on the points on the image plane computed 
-			Vector3D rayDir = Vector3D(imagePlane[0], imagePlane[1], imagePlane[2]);
+				// Construct the ray direction based on the points on the image plane computed 
+				Vector3D rayDir = Vector3D(imagePlane[0], imagePlane[1], imagePlane[2]);
 
-			// update the ray Direction to change from the view matrix to the world matrix 
-			rayDir = viewToWorld * rayDir;
-			// normalize the ray direction 
-			rayDir.normalize();
-			// Now create the actual ray given the origin and ray direction (from the point origin given above) 
-			Ray3D ray = Ray3D(origin, rayDir);
+				// update the ray Direction to change from the view matrix to the world matrix 
+				rayDir = viewToWorld * rayDir;
+				// normalize the ray direction 
+				rayDir.normalize();
 
-			// Get the color for this pixel by calling the shade ray function 
-			// shadeRay(ray) to generate pixel colour. 	
-			Colour col = shadeRay(ray); 
+				// Now create the actual ray given the origin and ray direction (from the point origin given above) 
+				Ray3D ray = Ray3D(origin, rayDir);
+
+				// Get the color for this pixel by calling the shade ray function 
+				// shadeRay(ray) to generate pixel colour. 	
+				Colour colTwo = shadeRay(ray); 
+				col[0] += colTwo[0]; 
+				col[1] += colTwo[1]; 
+				col[2] += colTwo[2]; 
+			}
+
+			col[0] /= (double) NUMANTIALIASE;  
+			col[1] /= (double) NUMANTIALIASE; 
+			col[2] /= (double) NUMANTIALIASE;  
 			// Finally, color the pixel based on the color that was given 
 			_rbuffer[i*width+j] = int(col[0]*255);
 			_gbuffer[i*width+j] = int(col[1]*255);
