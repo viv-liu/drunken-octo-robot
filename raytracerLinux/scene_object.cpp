@@ -12,9 +12,11 @@
 #include <iostream>
 #include "scene_object.h"
 
+
+// Note: To vivian, your intersection for t value was missing these, these fixes the back facing shadow, which i changed back to original 
 bool UnitSquare::intersect( Ray3D& ray, const Matrix4x4& worldToModel, const Matrix4x4& modelToWorld )
 {
-	// TODO: implement intersection code for UnitSquare, which is
+	// Implement intersection code for UnitSquare, which is
 	// defined on the xy-plane, with vertices (0.5, 0.5, 0), 
 	// (-0.5, 0.5, 0), (-0.5, -0.5, 0), (0.5, -0.5, 0), and normal
 	// (0, 0, 1).
@@ -25,11 +27,52 @@ bool UnitSquare::intersect( Ray3D& ray, const Matrix4x4& worldToModel, const Mat
 	//
 	// HINT: Remember to first transform the ray into object space  
 	// to simplify the intersection test.
+	Point3D origin(0,0,0);
+		Vector3D rayDir = worldToModel * ray.dir;
+		Point3D rayOrigin = worldToModel * ray.origin;
+		Vector3D squareNormal(0,0,1);
+		double t_value;
+		Point3D intersectionPoint;
+
+		if (rayDir[2] != 0)
+		{
+			t_value  = -rayOrigin[2]/rayDir[2];
+			if ((t_value*t_value )< 0.00001){
+				return false;
+			}
+		}
+
+		//the ray and the square are on the same plane
+		else if (rayDir[2] == 0 && rayOrigin[2] == 0)
+		{
+			double temp1 = (-1.5 - rayOrigin[0])/rayDir[0];
+			double temp2 = (1.5 - rayOrigin[0])/rayDir[0];
+			double temp3 = (-1.5 - rayOrigin[1])/rayDir[1];
+			double temp4 = (1.5 - rayOrigin[1])/rayDir[1];
+			t_value  = temp1;
+			if (temp2 < t_value )
+			{
+				t_value  = temp2;
+			}
+			if (temp3 < t_value )
+			{
+				t_value  =temp3;
+			}
+			if (temp4< t_value )
+			{
+				t_value  = temp4;
+			}
+		}
+		else
+		{
+
+			return false;
+		}
 	
 	Ray3D ObjectRay = Ray3D(worldToModel*ray.origin, worldToModel * ray.dir);
 
 	// Compute t_value from z intersection at z = 0
-	double t_value = (-1*ObjectRay.origin[2])/ObjectRay.dir[2];
+	//double t_value = (-1*ObjectRay.origin[2])/ObjectRay.dir[2]; // NOTE: THIS ITSELF IS WRONG!! NEED ALL CHECKING ABOVE 
 	
 	// If the ray already has an intersection at an earlier t_value, return but don't update
 	// ray.intersection fields
@@ -65,6 +108,8 @@ bool UnitSquare::intersect( Ray3D& ray, const Matrix4x4& worldToModel, const Mat
 
 	return false;
 }
+
+
 
 bool UnitSphere::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 		const Matrix4x4& modelToWorld ) {
@@ -126,17 +171,20 @@ bool UnitSphere::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 		ray.intersection.normal.normalize();		
 		ray.intersection.none = false;
 
-		/*std::cout << "Normal ";
-			std::cout << ray.intersection.normal[0];
-			std::cout << ray.intersection.normal[1];
-			std::cout << ray.intersection.normal[2];
-			std::cout <<"\n";*/
-		/*std::cout << "Point ";
-			std::cout << intersection[0];
-			std::cout << intersection[1];
-			std::cout << intersection[2];
-			std::cout <<"\n";*/
+	//	std::cout << "Normal ";
+	//		std::cout << ray.intersection.normal[0];
+	//		std::cout << ray.intersection.normal[1];
+	//		std::cout << ray.intersection.normal[2];
+	//		std::cout <<"\n";
+	//	std::cout << "Point ";
+	//		std::cout << intersection[0];
+	//		std::cout << intersection[1];
+	//		std::cout << intersection[2];
+	//		std::cout <<"\n";
 		return true;
 	}
 }
+
+
+
 

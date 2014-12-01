@@ -14,7 +14,7 @@
 #include <cmath>
 #include "light_source.h"
 
-void PointLight::shade( Ray3D& ray, bool isInShadow ) {
+void PointLight::shade( Ray3D& ray, bool isInShadow, int onlyAmbient  ) {
 	// TODO: implement this function to fill in values for ray.col 
 	// using phong shading.  Make sure your vectors are normalized, and
 	// clamp colour values to 1.0.
@@ -55,7 +55,7 @@ void PointLight::shade( Ray3D& ray, bool isInShadow ) {
 
 		ray.col[2] += mat_a[2] * I_a[2];
 					 
-		if(isInShadow == false) {
+		if(isInShadow == false && onlyAmbient==0) {
 			ray.col[0] += mat_d[0] * I_d[0] * fmax(0, s.dot(ray.intersection.normal)) +
 					 mat_s[0] * I_s[0] * pow(fmax(0, r.dot(b)), alpha);
 			ray.col[1] += mat_d[1] * I_d[1] * fmax(0, s.dot(ray.intersection.normal)) +

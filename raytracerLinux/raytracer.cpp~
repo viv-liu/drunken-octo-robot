@@ -24,17 +24,70 @@
 // 2. CHANGE NUMANTIALIASE TO 1				(worst antialiasing) 
 
 
+//----------------------------------------------------------------------------------------------------------
+// MODES for this ray tracer 
+//----------------------------------------------------------------------------------------------------------
+// Note: Uncomment if want them, note: can only uncomment one of these at a time 
+//#define SIGNATURE 1	// only ambient components 
+//#define PARTONEFULL 1 	// has antialias, without shadows 
+//#define SOFTSHADOW 1 // demonstrates soft shadows
+#define REFLECTION 1
+//----------------------------------------------------------------------------------------------------------
 
-// For offset Shadowing
-static bool headLightPresent = false; // this is useless, for now 
-
+// Part 1
+#ifdef SIGNATURE // only defien if SIGNATURE is defined 
+#define ONLYAMBIENT 1 // only ambient 1 means no other phong shading 
+#define NOSHADOW 1 // 1 means shadow is always off 
 #define NUMLIGHTS 6.0 // must stay 6 unless add more or less points to check 
 #define OFFSET 0.3   // a reasonable offset of light 
 #define NUMANTIALIASE 1
-// TODO: UNCOMMENT ABOVE AND COMMENT BELOW 
-//#define NUMANTIALIASE 1 // temporary 
+#define RAYDEPTH 1// no reflection 
+#define HEADLIGHTS 0 // use point lights
+#endif 
 
-#define RAYDEPTH 2// for reflection , note: Value of 1 means no reflection, CANNOT BE 0, if not division by 0 when losing energy calculation 
+// Full of part 1 
+#ifdef PARTONEFULL 
+#define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual 
+#define NOSHADOW 1 // 1 means shadow is always off 
+#define NUMLIGHTS 6.0 // must stay 6 unless add more or less points to check 
+#define OFFSET 0.3   // a reasonable offset of light 
+#define NUMANTIALIASE 5
+#define RAYDEPTH 1// no reflection  
+#define HEADLIGHTS 0 // use point lights
+#endif 
+
+// Part 2: a) Soft shadows 
+#ifdef SOFTSHADOW 
+#define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual  
+#define NOSHADOW 0 // 0 means shadow works as usual  
+#define NUMLIGHTS 6.0 // must stay 6 unless add more or less points to check 
+#define OFFSET 0.3   // a reasonable offset of light 
+#define NUMANTIALIASE 1 // no antialias for soft shadow 
+#define RAYDEPTH 1// no reflection 
+#define HEADLIGHTS 1 // use head lights (convert soft shadows to shadow) 
+#endif 
+
+// Part 2: b) Reflection 
+#ifdef REFLECTION
+#define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual  
+#define NOSHADOW 0 // 0 means shadow works as usual  
+#define NUMLIGHTS 6.0 // useless for now 
+#define OFFSET 0.3   // offset not used cause no head lights 
+#define NUMANTIALIASE 1 // no antialias 
+#define RAYDEPTH 2// reflection occurs 
+#define HEADLIGHTS 0 // use point lights (no soft shadows) 
+#endif 
+
+// Part 2: c) Depth of Field 
+
+// Part 2: d) Texture Mapping on sphere
+
+// Part 2: e) Refraction 
+
+//----------------------------------------------------------------------------------------------------------
+
+// For offset Shadowing
+static bool headLightPresent = false; // this is useless, for now 
 //----------------------------------------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------------------------------------
@@ -269,7 +322,8 @@ void Raytracer::computeShading( Ray3D& ray )
 
 			Vector3D vec = Vector3D(dx, dy, dz);
 			double epsilon = 0.001; 
-			Ray3D shadowRay = Ray3D(lightPos, intersectPos-lightPos);
+			Ray3D shadowRay = Ray3D(intersectPos, lightPos-intersectPos);
+			//Ray3D shadowRay = Ray3D(lightPos, intersectPos-lightPos);
 			traverseScene(_root, shadowRay);
 		
 			// Check if light intersects at intersectPos on object, if not then it's in shadow 
@@ -318,7 +372,9 @@ void Raytracer::computeShading( Ray3D& ray )
 		//	}
 			//std::cout<< isInShadow;
 		}
-		curLight->light->shade(ray, isInShadow);
+		if(NOSHADOW == 1) isInShadow = false; // always make it not in shadow 
+			
+		curLight->light->shade(ray, isInShadow, ONLYAMBIENT);
 		curLight = curLight->next;
 	}
 	//Done looping through all lights, now compute reflection 
@@ -343,7 +399,8 @@ void Raytracer::computeShading( Ray3D& ray )
 	tempPoint[2] = 1000*r[2]; 
 
 	// Now create the actual ray given the origin and ray direction (from the point origin given above) 
-	Ray3D reflectRay = Ray3D(tempPoint, -r);
+	//Ray3D reflectRay = Ray3D(tempPoint, -r);
+	Ray3D reflectRay = Ray3D(ray.intersection.point, r);
 	reflectRay.depth = ray.depth; // go to a reflectRay Depth of current ray depth 
 	reflectRay.viewToWorldRay3D = ray.viewToWorldRay3D; // useless for now 
 	// Get the color for this pixel by calling the shade ray function 
@@ -627,16 +684,21 @@ int main(int argc, char* argv[])
 	
 	Material mud( Colour(0.6, 0.0, 0.0), Colour(0.75164, 0.60648, 0.22648),Colour(0.628281, 0.555802, 0.366065),51.2);
 
+	// NOTE: Can only use HeadLight or Light Source but not both! 
+if(HEADLIGHTS==1)
+{
+	// Note: Below takes way longer with reflection implemented 
+//	raytracer.addHeadLightSource( -5, 0, 0, 0.9, 0.9, 0.9); 
+	raytracer.addHeadLightSource( 5, 0, 0, 0.9, 0.9, 0.9);
+}
+
+else
+{
 	// Defines a point light source with location in 3D as well as the color of the light.  (closed to white) 
 	// Add the point light source to the ray tracer's list of lightSource 
 //	raytracer.addLightSource( new PointLight(Point3D(-5, 0, 0), Colour(0.9, 0.9, 0.9)));
 	raytracer.addLightSource( new PointLight(Point3D(5, 0, 0), Colour(0.9, 0.9, 0.9)));
-// TODO: UNCOMMENT BELOW AND COMMENT ABOVE 
-// NOTE: Can only use HeadLight or Light Source but not both! 
-	// Note: Below takes way longer with reflection implemented 
-	// DEBUG: Below doesn't work with reflection cause too many 
-//	raytracer.addHeadLightSource( -5, 0, 0, 0.9, 0.9, 0.9); 
-//	raytracer.addHeadLightSource( 5, 0, 0, 0.9, 0.9, 0.9);
+}
 
 
 // raytracer.addLightSource( new PointLight(Point3D(5, 0, 0), Colour(0.4, 0.4, 0.4))); // Test: Darker light source 
