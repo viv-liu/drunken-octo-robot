@@ -215,9 +215,12 @@ struct Ray3D {
 	Vector3D dir;	// the direction of the ray tracer 
 	// Intersection status, should be computed by the intersection function.
 	Intersection intersection;
+	
+	Matrix4x4 viewToWorldRay3D;
 
 	// Current colour of the ray, should be computed by the shading function.
 	Colour col;
+	int depth; // number of depth 
 
 	// Constructor without point or intersection 
 	Ray3D() {
