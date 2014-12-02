@@ -12,6 +12,12 @@
 //The main body of the raytracer, including the scene graph.  Simple 
 // addition and traversal code to the graph are provided to you. 
 
+
+// TODO: Refraction
+// TODO: Arbitrary shape (online has code for cylinder and triangle)
+// TODO: REPORT
+// TODO: See if can fix reflection 
+
 #include "raytracer.h"
 #include "bmp_io.h"
 #include <cmath> // for fmax() 
@@ -33,8 +39,8 @@
 //#define REFLECTION 1 // specular perfect reflection (compulsory) 
 //#define SOFTSHADOW 1 // demonstrates soft shadows
 //#define DEPTHOFFIELD 1 // demonstrates use of depth of field with 30 antialiasing (2 minute compile per pic)
-//#define TEXTUREMAPPINGSPHERE 1
-#define MOTIONBLUR 1
+#define TEXTUREMAPPINGSPHERE 1
+//#define MOTIONBLUR 1
 //#define GLOSSYREFLECTION 1 
 
 
@@ -1000,7 +1006,9 @@ std::cout <<" Finished reading: " << "worldMap.bmp" << std::endl;
 	Material gold( Colour(0.3, 0.3, 0.3), Colour(0.75164, 0.60648, 0.22648), Colour(0.628281, 0.555802, 0.366065), 51.2, DOTEXTUREMAPSPHERE); // 1 => sphere does texture map 
 //Material gold( Colour(0.3, 0.3, 0.3), Colour(0.75164, 0.60648, 0.22648), Colour(0.628281, 0.555802, 0.366065), 1); // Test: Material with lower exponent 
 	// Material 2: Jade
-	Material jade( Colour(0, 0, 0), Colour(0.54, 0.89, 0.63), Colour(0.316228, 0.316228, 0.316228), 12.8 , 0 ); // 0 => No texture map 
+	int tempJade = 0; 
+	if (DOTEXTUREMAPSPHERE == 1) tempJade = 2; 
+	Material jade( Colour(0, 0, 0), Colour(0.54, 0.89, 0.63), Colour(0.316228, 0.316228, 0.316228), 12.8 , tempJade); // 0 => No texture map 
 
 //	Material jade( Colour(0, 0, 0), Colour(0.54, 0.89, 0.63), Colour(0.316228, 0.316228, 0.316228), 1 );	
 

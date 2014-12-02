@@ -57,35 +57,15 @@ void PointLight::shade( Ray3D& ray, bool isInShadow, int onlyAmbient, int textur
 		double alpha = ray.intersection.mat->specular_exp;
 		// if don't do image map 
 //std::cout <<" IMAGE MAP IS " <<ray.intersection.mat->imageMap <<std::endl; 
-		if(ray.intersection.mat->imageMap == 0)
-		//if(1)
-		{
-			// Compute ray colours using Phong model
-			ray.col[0] += mat_a[0] * I_a[0]; 
-		
-			ray.col[1] += mat_a[1] * I_a[1];
-
-			ray.col[2] += mat_a[2] * I_a[2];
-					
-			 
-			if(isInShadow == false && onlyAmbient==0 ) {
-				ray.col[0] += mat_d[0] * I_d[0] * fmax(0, s.dot(ray.intersection.normal)) +
-						 mat_s[0] * I_s[0] * pow(fmax(0, r.dot(b)), alpha);
-				ray.col[1] += mat_d[1] * I_d[1] * fmax(0, s.dot(ray.intersection.normal)) +
-						 mat_s[1] * I_s[1] * pow(fmax(0, r.dot(b)), alpha);
-				ray.col[2] += mat_d[2] * I_d[2] * fmax(0, s.dot(ray.intersection.normal)) +
-						 mat_s[2] * I_s[2] * pow(fmax(0, r.dot(b)), alpha);
-			}
-		//std::cout<<"1: "<< ray.col[0] << " 2: " << ray.col[1] << " 3: " << ray.col[2] <<std::endl; 
-		}
 		// Note: Code always assume image map is applied to spheres only 
-		else
+		if(ray.intersection.mat->imageMap == 1)
 		{
 			Point3D IntersectPoint = ray.intersection.point; // get the x, y, z coordinates of the sphere
 			// Need center of sphere
 			Point3D centerOfSphere = ray.intersection.CenterPoint; 
 	/*	std::cout << "Intersection points are " << ray.intersection.point[0] <<" "<<  ray.intersection.point[1] <<" "<<  ray.intersection.point[2] << std::endl; 
  		std::cout << "Center points are " << ray.intersection.CenterPoint[0] <<" "<<  ray.intersection.CenterPoint[1] <<" "<<  ray.intersection.CenterPoint[2] << std::endl; 
+
 	*/
 			// in radians 
 			// theta = [0, pi]
@@ -106,6 +86,63 @@ void PointLight::shade( Ray3D& ray, bool isInShadow, int onlyAmbient, int textur
 	//	std::cout<< "u: " << u << " v: "<< v<<" temp: " <<temp << std::endl; 
 	//	std::cout<<"1: "<< ray.col[0] << " 2: " << ray.col[1] << " 3: " << ray.col[2] <<std::endl; 
 		}
+		// Texture Mapping for plane 
+		else if(ray.intersection.mat->imageMap == 2)
+		{
+			Point3D IntersectPoint = ray.intersection.point; // get the x, y, z coordinates of the sphere
+			// Need center of sphere
+			Point3D centerOfPlane = ray.intersection.CenterPoint; 
+			// Determine if colour black or white based on the magnitude of the point
+			double magnitude = 0;
+//			std::cout <<" Magnitude is "<< magnitude << std::endl; 
+//			std::cout <<" SineValue is "<< sineValue << std::endl; 
+		//	magnitude += IntersectPoint[1]; 
+		//	magnitude += IntersectPoint[2]; // *IntersectPoint[2];
+			//magnitude = sqrt(magnitude); 
+			magnitude += IntersectPoint[0];
+			magnitude = (magnitude * M_PI); // /(double)width;
+			double sineValue = sin(magnitude); 
+
+			double color = 0; 
+			if (sineValue >= 0) color = 1; // set to 1 half the wave 
+			ray.col[0] = (color);// /(double)255 ;
+			magnitude = IntersectPoint[1];
+			magnitude = (magnitude * M_PI); // /(double)width;
+			 sineValue = sin(magnitude); 
+
+			 color = 0; 
+			if (sineValue >= 0) color = 1; // set to 1 ha
+			ray.col[1] = (color);// /(double)255 ;
+			magnitude = IntersectPoint[2];
+			magnitude = (magnitude * M_PI); // /(double)width;
+			 sineValue = sin(magnitude); 
+
+			 color = 0; 
+			if (sineValue >= 0) color = 1; // set to 1 ha
+			ray.col[2] = (color);// /(double)255 ;
+		}
+		//if(1)
+		else 
+		{
+			// Compute ray colours using Phong model
+			ray.col[0] += mat_a[0] * I_a[0]; 
+		
+			ray.col[1] += mat_a[1] * I_a[1];
+
+			ray.col[2] += mat_a[2] * I_a[2];
+					
+			 
+			if(isInShadow == false && onlyAmbient==0 ) {
+				ray.col[0] += mat_d[0] * I_d[0] * fmax(0, s.dot(ray.intersection.normal)) +
+						 mat_s[0] * I_s[0] * pow(fmax(0, r.dot(b)), alpha);
+				ray.col[1] += mat_d[1] * I_d[1] * fmax(0, s.dot(ray.intersection.normal)) +
+						 mat_s[1] * I_s[1] * pow(fmax(0, r.dot(b)), alpha);
+				ray.col[2] += mat_d[2] * I_d[2] * fmax(0, s.dot(ray.intersection.normal)) +
+						 mat_s[2] * I_s[2] * pow(fmax(0, r.dot(b)), alpha);
+			}
+		//std::cout<<"1: "<< ray.col[0] << " 2: " << ray.col[1] << " 3: " << ray.col[2] <<std::endl; 
+		}
+
 
 		// Clamp values down to 1.0
 		ray.col.clamp();
