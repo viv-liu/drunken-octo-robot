@@ -29,12 +29,13 @@
 // Note: Uncomment if want them, note: must only uncomment one of these at a time 
 //#define SIGNATURE 1	// only ambient components 
 //#define PARTONEFULL 1 	// has antialias, without shadows 
+//#define SHADOW 1 // normal shadow (compulsory)
+//#define REFLECTION 1 // specular perfect reflection (compulsory) 
 //#define SOFTSHADOW 1 // demonstrates soft shadows
 //#define DEPTHOFFIELD 1 // demonstrates use of depth of field with 30 antialiasing (2 minute compile per pic)
 //#define TEXTUREMAPPINGSPHERE 1
 #define MOTIONBLUR 1
-// TODO: 
-//#define GLOSSYREFLECTION 1
+//#define GLOSSYREFLECTION 1 
 
 
 //----------------------------------------------------------------------------------------------------------
@@ -72,6 +73,44 @@
 #define DOTEXTUREMAPSPHERE 0 // 1 means do texture map on sphere, 0 means not. 
 #define DOMOTIONBLUR 0 //  means do motion blur, 0 means do not. 
 #define NUMGLOSSY 5 // number of times to reshoot glossy for reflection 
+#define NUMMOTIONBLUR 5 // length of motion blur to move 
+#endif 
+
+// Part 2:Compulsory One
+#ifdef SHADOW 
+#define SCALESPHERE 1 // 1 means scale the sphere, 0 means don't 
+#define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual  
+#define NOSHADOW 0 // 0 means shadow works as usual  
+#define NUMLIGHTS 6.0 // must stay 6 unless add more or less points to check 
+#define OFFSET 0.3   // a reasonable offset of light 
+#define NUMANTIALIASE 1 // no antialias for soft shadow 
+#define RAYDEPTH 1// no reflection 
+// Set HeadLights to 0 to do shadows without soft shadows 
+#define HEADLIGHTS 0 // dont use headlights for normal shadows
+#define DODEPTHOFFIELD 0 //means no depth of field  
+#define FOCALLENGTH 5 // focal length for depth of field 
+#define DOTEXTUREMAPSPHERE 0 // 1 means do texture map on sphere, 0 means not. 
+#define DOMOTIONBLUR 0 //  means do motion blur, 0 means do not. 
+#define NUMGLOSSY 5 // number of times to reshoot glossy for reflection 
+#define NUMMOTIONBLUR 5// length of motion blur to move 
+#endif 
+
+// Part 2:Compulsory Two //FIXME: 
+#ifdef REFLECTION
+#define SCALESPHERE 0 // 1 means scale the sphere, 0 means don't 
+#define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual  
+#define NOSHADOW 1 // Turn off shadows  
+#define NUMLIGHTS 6.0 // useless for now 
+#define OFFSET 0.3   // offset not used cause no head lights 
+#define NUMANTIALIASE 1 // no antialias 
+#define RAYDEPTH 2// reflection occurs 
+#define HEADLIGHTS 0 // use point lights (no soft shadows) 
+#define DODEPTHOFFIELD 0 //means no depth of field  
+#define FOCALLENGTH 5 // focal length for depth of field 
+#define DOTEXTUREMAPSPHERE 0 // 1 means do texture map on sphere, 0 means not. 
+#define DOMOTIONBLUR 0 // 1 means do motion blur, 0 means do not. 
+// Set NUMGLOSSY to 1 for no glossy reflection (perfect reflection)  
+#define NUMGLOSSY 1 // do perfect reflection 
 #define NUMMOTIONBLUR 5 // length of motion blur to move 
 #endif 
 
@@ -156,9 +195,7 @@
 #define NUMMOTIONBLUR 5 // length of motion blur to move 
 #endif 
 
-//---------------------------------------------------------------------------------------
-// TODO: BELOW IS STILL UNDER PROGRESS (works but reflect both ways for now) 
-//TODO:  Part 2: e) Glossy Reflection 
+//FIXME:  Part 2: e) Glossy Reflection 
 #ifdef GLOSSYREFLECTION
 #define SCALESPHERE 0 // 1 means scale the sphere, 0 means don't 
 #define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual  
@@ -177,7 +214,8 @@
 #define NUMMOTIONBLUR 5 // length of motion blur to move 
 #endif 
 
-
+//---------------------------------------------------------------------------------------
+// TODO:
 // Part 2: f) Refraction or Cylinder, whichever is easier 
 // Refraction is difficult cause need another helper recursive function
 // that detects if you enter an object, go inside in a different path
