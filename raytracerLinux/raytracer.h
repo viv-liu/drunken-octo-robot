@@ -191,5 +191,5 @@ public:
 	// Note: View Vector is direction camera is looking at (the tracing from the camera)
 	// Note: Up Vector is when you rotate the camera, and image gets rotated although you are tracing towards the same point) 
 	// Field Of View => angle at which you can see 
-	void render( int width, int height, Point3D eye, Vector3D view, Vector3D up, double fov, char* fileName );
+	void render( int width, int height, Point3D eye, Vector3D view, Vector3D up, double fov, char* fileName, SceneDagNode* node );
 };

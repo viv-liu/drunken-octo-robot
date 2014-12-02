@@ -23,20 +23,23 @@
 // 1. CHANGE THE LIGHT TO POINT LIGHT INSTEAD OF HEADLIGHT (no softshadow)
 // 2. CHANGE NUMANTIALIASE TO 1				(worst antialiasing) 
 
-
 //----------------------------------------------------------------------------------------------------------
 // MODES for this ray tracer 
 //----------------------------------------------------------------------------------------------------------
-// Note: Uncomment if want them, note: can only uncomment one of these at a time 
+// Note: Uncomment if want them, note: must only uncomment one of these at a time 
 //#define SIGNATURE 1	// only ambient components 
 //#define PARTONEFULL 1 	// has antialias, without shadows 
 //#define SOFTSHADOW 1 // demonstrates soft shadows
+#define DEPTHOFFIELD 1 // demonstrates use of depth of field with 30 antialiasing (2 minute compile per pic)
 //#define GLOSSYREFLECTION 1
-#define DEPTHOFFIELD 1 
+//#define TEXTUREMAPPINGSPHERE 1
+//#define MOTIONBLUR 1
+
 //----------------------------------------------------------------------------------------------------------
 
 // Part 1
 #ifdef SIGNATURE // only defien if SIGNATURE is defined 
+#define SCALESPHERE 1 // 1 means scale the sphere, 0 means don't 
 #define ONLYAMBIENT 1 // only ambient 1 means no other phong shading 
 #define NOSHADOW 1 // 1 means shadow is always off 
 #define NUMLIGHTS 6.0 // must stay 6 unless add more or less points to check 
@@ -46,10 +49,13 @@
 #define HEADLIGHTS 0 // use point lights
 #define DODEPTHOFFIELD 0 //means no depth of field 
 #define FOCALLENGTH 5 // focal length for depth of field 
+#define DOTEXTUREMAPSPHERE 0 // 1 means do texture map on sphere, 0 means not. 
+#define DOMOTIONBLUR 0 //  means do motion blur, 0 means do not. 
 #endif 
 
 // Full of part 1 
 #ifdef PARTONEFULL 
+#define SCALESPHERE 1 // 1 means scale the sphere, 0 means don't 
 #define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual 
 #define NOSHADOW 1 // 1 means shadow is always off 
 #define NUMLIGHTS 6.0 // must stay 6 unless add more or less points to check 
@@ -59,10 +65,13 @@
 #define HEADLIGHTS 0 // use point lights
 #define DODEPTHOFFIELD 0 //means no depth of field  
 #define FOCALLENGTH 5 // focal length for depth of field 
+#define DOTEXTUREMAPSPHERE 0 // 1 means do texture map on sphere, 0 means not. 
+#define DOMOTIONBLUR 0 //  means do motion blur, 0 means do not. 
 #endif 
 
 // Part 2: a) Soft Shadows 
 #ifdef SOFTSHADOW 
+#define SCALESPHERE 1 // 1 means scale the sphere, 0 means don't 
 #define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual  
 #define NOSHADOW 0 // 0 means shadow works as usual  
 #define NUMLIGHTS 6.0 // must stay 6 unless add more or less points to check 
@@ -72,10 +81,13 @@
 #define HEADLIGHTS 1 // use head lights (convert soft shadows to shadow) 
 #define DODEPTHOFFIELD 0 //means no depth of field  
 #define FOCALLENGTH 5 // focal length for depth of field 
+#define DOTEXTUREMAPSPHERE 0 // 1 means do texture map on sphere, 0 means not. 
+#define DOMOTIONBLUR 0 //  means do motion blur, 0 means do not. 
 #endif 
 
 // Part 2: b) Depth of Field  (note: This takes long to run due to needed high number of aliasing. 
 #ifdef DEPTHOFFIELD 
+#define SCALESPHERE 1 // 1 means scale the sphere, 0 means don't 
 #define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual  
 #define NOSHADOW 0 // 0 means shadow works as usual  
 #define NUMLIGHTS 6.0 // useless for now 
@@ -84,13 +96,16 @@
 #define RAYDEPTH 1// no reflection 
 #define HEADLIGHTS 0 // use point lights (no soft shadows) 
 #define DODEPTHOFFIELD 1 //means do depth of field 
-#define FOCALLENGTH 5 // focal length for depth of field 
+#define FOCALLENGTH 6 // focal length for depth of field 
+#define DOTEXTUREMAPSPHERE 0 // 1 means do texture map on sphere, 0 means not.
+#define DOMOTIONBLUR 0 //  1 means do motion blur, 0 means do not.  
 #endif 
 
-
+//---------------------------------------------------------------------------------------
 // TODO: BELOW IS STILL UNDER PROGRESS (works but reflect both ways for now) 
 //TODO:  Part 2: c) Glossy Reflection 
 #ifdef GLOSSYREFLECTION
+#define SCALESPHERE 0 // 1 means scale the sphere, 0 means don't 
 #define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual  
 #define NOSHADOW 1 // Turn off shadows  
 #define NUMLIGHTS 6.0 // useless for now 
@@ -100,13 +115,43 @@
 #define HEADLIGHTS 0 // use point lights (no soft shadows) 
 #define DODEPTHOFFIELD 0 //means no depth of field  
 #define FOCALLENGTH 5 // focal length for depth of field 
+#define DOTEXTUREMAPSPHERE 0 // 1 means do texture map on sphere, 0 means not. 
+#define DOMOTIONBLUR 0 // 1 means do motion blur, 0 means do not. 
 #endif 
 
-
 // Part 2: d) Texture Mapping on sphere
+#ifdef TEXTUREMAPPINGSPHERE
+#define SCALESPHERE 0 // 1 means scale the sphere, 0 means don't 
+#define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual  
+#define NOSHADOW 1 // Turn off shadows  
+#define NUMLIGHTS 6.0 // useless for now 
+#define OFFSET 0.3   // offset not used cause no head lights 
+#define NUMANTIALIASE 1 // no antialias 
+#define RAYDEPTH 1// no reflection  
+#define HEADLIGHTS 0 // use point lights (no soft shadows) 
+#define DODEPTHOFFIELD 0 //means no depth of field  
+#define FOCALLENGTH 5 // focal length for depth of field 
+#define DOTEXTUREMAPSPHERE 1 // 1 means do texture map on sphere, 0 means not. 
+#define DOMOTIONBLUR 0 // 1 means do motion blur, 0 means do not. 
+#endif 
 
-// Part 2: e) Refraction 
+// Part 2: e) Motion Blur 
+#ifdef MOTIONBLUR
+#define SCALESPHERE 0 // 1 means scale the sphere, 0 means don't 
+#define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual  
+#define NOSHADOW 1 // Turn off shadows  
+#define NUMLIGHTS 6.0 // useless for now 
+#define OFFSET 0.3   // offset not used cause no head lights 
+#define NUMANTIALIASE 1 // no antialias 
+#define RAYDEPTH 1// no reflection  
+#define HEADLIGHTS 0 // use point lights (no soft shadows) 
+#define DODEPTHOFFIELD 0 //means no depth of field  
+#define FOCALLENGTH 5 // focal length for depth of field 
+#define DOTEXTUREMAPSPHERE 0 // 1 means do texture map on sphere, 0 means not. 
+#define DOMOTIONBLUR 1 // 1 means do motion blur, 0 means do not. 
+#endif 
 
+// Part 2: f) Refraction or Cylinder, whichever is easier 
 //----------------------------------------------------------------------------------------------------------
 
 // For offset Shadowing
@@ -569,7 +614,7 @@ Colour Raytracer::shadeRay( Ray3D& ray)
 //----------------------------------------------------------------------------------------------------------
 
 // This function renders the entire scene once it is done being set up. 
-void Raytracer::render( int width, int height, Point3D eye, Vector3D view, Vector3D up, double fov, char* fileName ) 
+void Raytracer::render( int width, int height, Point3D eye, Vector3D view, Vector3D up, double fov, char* fileName, SceneDagNode* node  ) 
 {
 	// Create a matrix called view to world 
 	Matrix4x4 viewToWorld;
@@ -587,9 +632,14 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view, Vecto
 	// Initialize the viewToWorld Matrix given the camera properties 
 	viewToWorld = initInvViewMatrix(eye, view, up);
 	
+	int NUMMOTIONBLUR = 1; 
+	// 20 times for motion blur 
+	for(int lkj = 0; lkj < NUMMOTIONBLUR; lkj++)
+	{
 	// Construct a ray for each pixel.
 	for (int i = 0; i < _scrHeight; i++) 
 	{
+
 		for (int j = 0; j < _scrWidth; j++) 
 		{
 			// Sets up ray origin and direction in view space, image plane is at z = -1.
@@ -654,12 +704,15 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view, Vecto
     				double dv = rand()/double(RAND_MAX+1);
 				// Need jitter position of start (important for depth of field) 
 				// creating new camera position(or ray start using jittering)
-
-				double u = radius * cos(fov); 
-				double v = radius * sin(fov); 
-				start[0]= eye[0] -(radius/2)*u-(radius/2)*v+radius*(du)*u+radius*(dv)*v; 
-				start[1]= eye[1] -(radius/2)*u-(radius/2)*v+radius*(du)*u+radius*(dv)*v; 
-				start[2]= eye[2] -(radius/2)*u-(radius/2)*v+radius*(du)*u+radius*(dv)*v; 
+				// Definition of u and v might be wrong,
+				// may need to be direction orthogonal to light direction. 
+				//double u = radius * cos(fov); 
+				//double v = radius * sin(fov); 
+				Vector3D u = up; 
+				Vector3D v = up.cross(view); 
+				start[0]= eye[0] -(radius/2)*u[0]-(radius/2)*v[0]+radius*(du)*u[0]+radius*(dv)*v[0]; 
+				start[1]= eye[1] -(radius/2)*u[1]-(radius/2)*v[1]+radius*(du)*u[1]+radius*(dv)*v[1]; 
+				start[2]= eye[2] -(radius/2)*u[2]-(radius/2)*v[2]+radius*(du)*u[2]+radius*(dv)*v[2]; 
 			         //getting the new direction of ray
 				 rayDir = pointAimed - start;
 				 Ray3D ray = Ray3D(eye, rayDir);
@@ -703,6 +756,23 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view, Vecto
 			_bbuffer[i*width+j] = int(col[2]*255);
 		}
 	}
+			if(DOMOTIONBLUR == 1)
+			{
+				// move the sphere
+		this->translate(node, Vector3D(0, 0.1 , 0));	
+			}
+	} // MOTION BLUR 
+	// Finally, divide by the number of times it loop through motion blur 
+	for (int i = 0; i < _scrHeight; i++) 
+	{
+
+		for (int j = 0; j < _scrWidth; j++) 
+		{
+			_rbuffer[i*width+j]/(double)NUMMOTIONBLUR; 
+			_gbuffer[i*width+j]/(double)NUMMOTIONBLUR; 
+			_bbuffer[i*width+j]/(double)NUMMOTIONBLUR; 
+		}	
+	}
 	// Finally, flush the entire pixelbuffer to the file name given. 
 	flushPixelBuffer(fileName);
 }
@@ -712,13 +782,14 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view, Vecto
 //----------------------------------------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {	
+
 	// Build your scene and setup your camera here, by calling 
 	// functions from Raytracer.  The code here sets up an example
 	// scene and renders it from two different view points, DO NOT
 	// change this if you're just implementing part one of the 
 	// assignment.  
 	//-----------------------------------------------------------------------------------------------------------
-	// Step1 : Initialize the main raytracer, screen wdith and height and camera 
+	// Step1 : Initialize the main raytracer, screen width and height and camera 
 	//-----------------------------------------------------------------------------------------------------------
 	Raytracer raytracer;
 		//-------------------------------------------------
@@ -744,8 +815,45 @@ int main(int argc, char* argv[])
 		height = atoi(argv[2]);
 	}
 
-	// Camera parameters.
+//-------------------------------------------------------------------------------------
+/*	// For texture map 
+	unsigned char** rbuffer; 
+	unsigned char** gbuffer; 
+	unsigned char** bbuffer; 
+	
+	// Initialize the buffers 
+	int numbytesTextureMap = width * height * sizeof(unsigned char);
+	rbuffer = new unsigned char[numbytesTextureMap];
+	gbuffer = new unsigned char[numbytesTextureMap];
+	bbuffer = new unsigned char[numbytesTextureMap];
+	for (int i = 0; i < height; i++) 
+	{
+		for (int j = 0; j < width; j++) 
+		{
+			rbuffer[i*width+j] = 0;
+			gbuffer[i*width+j] = 0;
+			bbuffer[i*width+j] = 0;
+		}
+	}
+int temp1 = width;
+int temp2 = height; 
+long unsigned int* widthTextureMap = new long unsigned int(width);
+long int* heightTexturemap = new long int(height); 
+	//bmp_write( file_name, _scrWidth, _scrHeight, _rbuffer, _gbuffer, _bbuffer );
+bmp_read("worldMap.bmp", widthTextureMap, heightTexturemap, rbuffer, gbuffer, bbuffer); 
+std::cout <<" I AM HERE " << std::endl; 
+	//bool bmp_read ( char *file_in_name, unsigned long int *width, long int *height, 
+		//unsigned char **rarray, unsigned char **garray, unsigned char **barray );
 
+	//bool bmp_write ( char *file_out_name, unsigned long int width, long int height, 
+  		//unsigned char *rarray, unsigned char *garray, unsigned char *barray );
+
+// Testing bmp read
+if(bmp_read_test("worldMap.bmp")) std::cout<<"ReadWorldmap" << std::endl; 
+else std::cout<<"FailedToRead" << std::endl; */
+//-------------------------------------------------------------------------------------
+
+	// Camera parameters.
 	Point3D eye(0, 0, 1);
 	Vector3D view(0, 0, -1);
 	Vector3D up(0, 1, 0);
@@ -809,21 +917,22 @@ else
 	// Create a factor for scaling (ScaleX, ScaleY, ScaleZ) 
 	double factor1[3] = { 1.0, 2.0, 1.0 };
 	double factor2[3] = { 6.0, 6.0, 6.0 };
-
+	double factor3[3] = { 3.0, 3.0, 3.0 };
 	// Do transformations on sphere 
 	// Add the translation matrix to the sphere's list of transformation and inverse transformation 
 	raytracer.translate(sphere, Vector3D(0, 0, -5));	
 	// Similarly, add rotations and scaling 
 	raytracer.rotate(sphere, 'x', -45); 
 	raytracer.rotate(sphere, 'z', 45); 
-	raytracer.scale(sphere, Point3D(0, 0, 0), factor1);
+	if (SCALESPHERE == 1)	raytracer.scale(sphere, Point3D(0, 0, 0), factor1);
 	// Add the translation matrix to the sphere's list of transformation and inverse transformation 
 	raytracer.translate(sphereTwo, Vector3D(2, 2, -5));	
 	// Similarly, add rotations and scaling 
 	raytracer.rotate(sphereTwo, 'x', -30); 
 	raytracer.rotate(sphereTwo, 'z', 25); 
-	raytracer.scale(sphereTwo, Point3D(0, 0, 0), factor1);
+	if (SCALESPHERE == 1)raytracer.scale(sphereTwo, Point3D(0, 0, 0), factor1);
 
+ 	if(DOMOTIONBLUR == 1)raytracer.scale(sphere, Point3D(0, 0, 0), factor3);
 	// Similarly, do transformations on the plane 
 	raytracer.translate(plane, Vector3D(0, 0, -7));	
 	raytracer.rotate(plane, 'z', 45); 
@@ -834,7 +943,7 @@ else
 	//---------------------------------------------------------------------------------------------------------------
 	// Render the scene, feel free to make the image smaller for testing purposes.	
 	// Note: Render creates and flushes the pixel buffer in 2 different functions (it creates the pixel buffer in render() and flushes it in flushPixelBuffer() that is called by render() 
-	raytracer.render(width, height, eye, view, up, fov, "view1.bmp");	// output the image with name view1.bmp
+	raytracer.render(width, height, eye, view, up, fov, "view1.bmp", sphere);	// output the image with name view1.bmp
 	
 std::cout << "View1.bmp done" << std::endl; 
 	// Render it from a different point of view.
@@ -842,16 +951,16 @@ std::cout << "View1.bmp done" << std::endl;
 	Vector3D view2(-4, -2, -6);
 	//Point3D eye2(2, 0, 1);
 	//Vector3D view2(0, 0, -1);
-	raytracer.render(width, height, eye2, view2, up, fov, "view2.bmp");	// output the image with name view2.bmp 
+	raytracer.render(width, height, eye2, view2, up, fov, "view2.bmp", sphere);	// output the image with name view2.bmp 
 
 std::cout << "View2.bmp done" << std::endl; 
 	Point3D eye3(-1, 0, 0);
 	Vector3D view3(1, 0, -1);
-	raytracer.render(width, height, eye3, view3, up, fov, "view3.bmp");	// output the image with name
+	raytracer.render(width, height, eye3, view3, up, fov, "view3.bmp", sphere);	// output the image with name
 std::cout << "View3.bmp done" << std::endl; 
 	Point3D eye4(-2, 0, -6);
 	Vector3D view4(1, 0, 0);
-	raytracer.render(width, height, eye4, view4, up, fov, "view4.bmp");	// output the image with name
+	raytracer.render(width, height, eye4, view4, up, fov, "view4.bmp", sphere);	// output the image with name
 std::cout << "View4.bmp done" << std::endl; 
 	return 0;
 }
