@@ -33,8 +33,8 @@
 //#define DEPTHOFFIELD 1 // demonstrates use of depth of field with 30 antialiasing (2 minute compile per pic)
 //#define TEXTUREMAPPINGSPHERE 1
 // TODO: 
-//#define GLOSSYREFLECTION 1
-#define MOTIONBLUR 1
+#define GLOSSYREFLECTION 1
+//#define MOTIONBLUR 1
 
 //----------------------------------------------------------------------------------------------------------
 
@@ -52,6 +52,7 @@
 #define FOCALLENGTH 5 // focal length for depth of field 
 #define DOTEXTUREMAPSPHERE 0 // 1 means do texture map on sphere, 0 means not. 
 #define DOMOTIONBLUR 0 //  means do motion blur, 0 means do not. 
+#define NUMGLOSSY 5 // number of times to reshoot glossy for reflection 
 #endif 
 
 // Full of part 1 
@@ -68,6 +69,7 @@
 #define FOCALLENGTH 5 // focal length for depth of field 
 #define DOTEXTUREMAPSPHERE 0 // 1 means do texture map on sphere, 0 means not. 
 #define DOMOTIONBLUR 0 //  means do motion blur, 0 means do not. 
+#define NUMGLOSSY 5 // number of times to reshoot glossy for reflection 
 #endif 
 
 // Part 2: a) Soft Shadows 
@@ -79,11 +81,13 @@
 #define OFFSET 0.3   // a reasonable offset of light 
 #define NUMANTIALIASE 1 // no antialias for soft shadow 
 #define RAYDEPTH 1// no reflection 
+// Set HeadLights to 0 to do shadows without soft shadows 
 #define HEADLIGHTS 1 // use head lights (convert soft shadows to shadow) 
 #define DODEPTHOFFIELD 0 //means no depth of field  
 #define FOCALLENGTH 5 // focal length for depth of field 
 #define DOTEXTUREMAPSPHERE 0 // 1 means do texture map on sphere, 0 means not. 
 #define DOMOTIONBLUR 0 //  means do motion blur, 0 means do not. 
+#define NUMGLOSSY 5 // number of times to reshoot glossy for reflection 
 #endif 
 
 // Part 2: b) Depth of Field  (note: This takes long to run due to needed high number of aliasing. 
@@ -100,6 +104,7 @@
 #define FOCALLENGTH 6 // focal length for depth of field 
 #define DOTEXTUREMAPSPHERE 0 // 1 means do texture map on sphere, 0 means not.
 #define DOMOTIONBLUR 0 //  1 means do motion blur, 0 means do not.  
+#define NUMGLOSSY 5 // number of times to reshoot glossy for reflection 
 #endif 
 
 // Part 2: c) Texture Mapping on sphere
@@ -116,6 +121,7 @@
 #define FOCALLENGTH 5 // focal length for depth of field 
 #define DOTEXTUREMAPSPHERE 1 // 1 means do texture map on sphere, 0 means not. 
 #define DOMOTIONBLUR 0 // 1 means do motion blur, 0 means do not. 
+#define NUMGLOSSY 5 // number of times to reshoot glossy for reflection 
 #endif 
 
 // Global buffers for texture map, these are global and used in light_source.cpp as well  
@@ -141,6 +147,8 @@
 #define FOCALLENGTH 5 // focal length for depth of field 
 #define DOTEXTUREMAPSPHERE 0 // 1 means do texture map on sphere, 0 means not. 
 #define DOMOTIONBLUR 0 // 1 means do motion blur, 0 means do not. 
+// Set NUMGLOSSY to 1 for no glossy reflection (perfect reflection)  
+#define NUMGLOSSY 5 // number of times to reshoot glossy for reflection 
 #endif 
 
 // Part 2: e) Motion Blur 
@@ -157,6 +165,7 @@
 #define FOCALLENGTH 5 // focal length for depth of field 
 #define DOTEXTUREMAPSPHERE 0 // 1 means do texture map on sphere, 0 means not. 
 #define DOMOTIONBLUR 1 // 1 means do motion blur, 0 means do not. 
+#define NUMGLOSSY 5 // number of times to reshoot glossy for reflection 
 #endif 
 
 // Part 2: f) Refraction or Cylinder, whichever is easier 
@@ -469,35 +478,58 @@ void Raytracer::computeShading( Ray3D& ray )
 	// Intersection point to point light source position
 	Vector3D l = Vector3D(ray.origin - ray.intersection.point);
 	l.normalize();
+	Colour colTwo;
+	colTwo[0] = 0;	colTwo[1] = 0;	colTwo[2] = 0;
+Ray3D reflectRay;
 
-	// Reflection of l across n, vector 
-	Vector3D r = Vector3D(-1 * l + 2 * ray.intersection.normal.dot(l) * ray.intersection.normal);
-	
-// Uncomment below to check later if changes anything 
-// update the ray Direction to change from the view matrix to the world matrix 
-//	r = ray.viewToWorldRay3D * r; // note: this matrix is only for eye, to generate one for r, compute all over again
-	// normalize the ray direction 
-	r.normalize();
-	Point3D tempPoint = ray.intersection.point; 
-	tempPoint[0] = 1000*r[0]; 
-	tempPoint[1] = 1000*r[1]; 
-	tempPoint[2] = 1000*r[2]; 
+	for(int lmn = 0; lmn < NUMGLOSSY; lmn++)
+	{
+		// Reflection of l across n, vector 
 
-	// Now create the actual ray given the origin and ray direction (from the point origin given above) 
-	Ray3D reflectRay = Ray3D(ray.intersection.point, r);
-	//Ray3D reflectRay = Ray3D(tempPoint, -r); // note: This causes a recursive map into the object 
-						// if intersection implemented correctly. 
-	reflectRay.depth = ray.depth; // go to a reflectRay Depth of current ray depth 
-	reflectRay.viewToWorldRay3D = ray.viewToWorldRay3D; // useless for now 
-	// Get the color for this pixel by calling the shade ray function 
-	// shadeRay(ray) to generate pixel colour. 	
-	Colour colTwo = shadeRay(reflectRay); 
+		Vector3D r = Vector3D(-1 * l + 2 * ray.intersection.normal.dot(l) * ray.intersection.normal);
+    		double rng1 = rand()/double(RAND_MAX);//generating random number
+    		double rng2 = rand()/double(RAND_MAX);//generating random number
+    		double rng3 = rand()/double(RAND_MAX);//generating random number
+		if ((rand() % 10) > 4) rng1*= -1; // deduct instead 
+		if ((rand() % 10) > 4) rng2*= -1; // deduct instead 
+		if ((rand() % 10) > 4) rng3*= -1; // deduct instead 
+//std::cout<<"rng is " <<rng << std::endl; 
+		// only do glossy if NUMGLOSSY is more than 1, else do perfect 
+		if(NUMGLOSSY > 1)
+		{
+			// Add a small random offset to r 
+			r[0] += rng1; 	
+			r[1] += rng2; 	
+			r[2] += rng3; 	
+		}
+	// Uncomment below to check later if changes anything 
+	// update the ray Direction to change from the view matrix to the world matrix 
+	//	r = ray.viewToWorldRay3D * r; // note: this matrix is only for eye, to generate one for r, compute all over again
+		// normalize the ray direction 
+		r.normalize();
+		Point3D tempPoint = ray.intersection.point; 
+		tempPoint[0] = 1000*r[0]; 
+		tempPoint[1] = 1000*r[1]; 
+		tempPoint[2] = 1000*r[2]; 
 
-	// Update colour of current ray (take into account lose of energy each time) 
+		// Now create the actual ray given the origin and ray direction (from the point origin given above) 
+		 reflectRay = Ray3D(ray.intersection.point, r);
+		//Ray3D reflectRay = Ray3D(tempPoint, -r); // note: This causes a recursive map into the object 
+							// if intersection implemented correctly. 
+		reflectRay.depth = ray.depth; // go to a reflectRay Depth of current ray depth 
+		reflectRay.viewToWorldRay3D = ray.viewToWorldRay3D; // useless for now 
+		// Get the color for this pixel by calling the shade ray function 
+		// shadeRay(ray) to generate pixel colour. 	
+		Colour tempCol = shadeRay(reflectRay); // get the colour 
+		colTwo[0] += tempCol[0]; colTwo[1] += tempCol[1]; colTwo[2] += tempCol[2];  
 
-	ray.col[0] += colTwo[0]/(RAYDEPTH - reflectRay.depth); // need divide by remaining depth of recursion each time to lose energy 
-	ray.col[1] += colTwo[1]/(RAYDEPTH - reflectRay.depth); 
-	ray.col[2] += colTwo[2]/(RAYDEPTH - reflectRay.depth); 
+		// Update colour of current ray (take into account lose of energy each time) 
+		
+	}
+
+	ray.col[0] += (colTwo[0]/(double)NUMGLOSSY)/(double)(RAYDEPTH - reflectRay.depth); // need divide by remaining depth of recursion each time to lose energy 
+	ray.col[1] += (colTwo[1]/(double)NUMGLOSSY)/(double)(RAYDEPTH - reflectRay.depth); 
+	ray.col[2] += (colTwo[2]/(double)NUMGLOSSY)/(double)(RAYDEPTH - reflectRay.depth); 
 
 	// pg 103/785 in pdf 
 	// Multiply with specular reflection to lose energy instead of the reflect ray 
@@ -865,7 +897,7 @@ long int* heightTexturemap = new long int(height);
 bmp_read("worldMap.bmp", widthTextureMap, heightTexturemap, &rbuffer, &gbuffer, &bbuffer); 
 std::cout <<" Finished reading: " << "worldMap.bmp" << std::endl; 
 	unsigned char* _rbuffer;
-	unsigned char* _gbuffer;
+	unsigned char* _gbuffer;    				
 	unsigned char* _bbuffer;
 // test to see if data is correct
 	_rbuffer = new unsigned char[numbytesTextureMap];
