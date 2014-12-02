@@ -30,9 +30,9 @@
 //#define SIGNATURE 1	// only ambient components 
 //#define PARTONEFULL 1 	// has antialias, without shadows 
 //#define SOFTSHADOW 1 // demonstrates soft shadows
-#define DEPTHOFFIELD 1 // demonstrates use of depth of field with 30 antialiasing (2 minute compile per pic)
+//#define DEPTHOFFIELD 1 // demonstrates use of depth of field with 30 antialiasing (2 minute compile per pic)
 //#define GLOSSYREFLECTION 1
-//#define TEXTUREMAPPINGSPHERE 1
+#define TEXTUREMAPPINGSPHERE 1
 //#define MOTIONBLUR 1
 
 //----------------------------------------------------------------------------------------------------------
@@ -96,7 +96,7 @@
 #define RAYDEPTH 1// no reflection 
 #define HEADLIGHTS 0 // use point lights (no soft shadows) 
 #define DODEPTHOFFIELD 1 //means do depth of field 
-#define FOCALLENGTH 5 // focal length for depth of field 
+#define FOCALLENGTH 6 // focal length for depth of field 
 #define DOTEXTUREMAPSPHERE 0 // 1 means do texture map on sphere, 0 means not.
 #define DOMOTIONBLUR 0 //  1 means do motion blur, 0 means do not.  
 #endif 
@@ -816,10 +816,13 @@ int main(int argc, char* argv[])
 	}
 
 //-------------------------------------------------------------------------------------
-/*	// For texture map 
-	unsigned char** rbuffer; 
-	unsigned char** gbuffer; 
-	unsigned char** bbuffer; 
+if(DOTEXTUREMAPSPHERE == 1)
+{
+	
+// For texture map 
+	unsigned char* rbuffer; 
+	unsigned char* gbuffer; 
+	unsigned char* bbuffer; 
 	
 	// Initialize the buffers 
 	int numbytesTextureMap = width * height * sizeof(unsigned char);
@@ -840,17 +843,38 @@ int temp2 = height;
 long unsigned int* widthTextureMap = new long unsigned int(width);
 long int* heightTexturemap = new long int(height); 
 	//bmp_write( file_name, _scrWidth, _scrHeight, _rbuffer, _gbuffer, _bbuffer );
-bmp_read("worldMap.bmp", widthTextureMap, heightTexturemap, rbuffer, gbuffer, bbuffer); 
-std::cout <<" I AM HERE " << std::endl; 
 	//bool bmp_read ( char *file_in_name, unsigned long int *width, long int *height, 
 		//unsigned char **rarray, unsigned char **garray, unsigned char **barray );
-
 	//bool bmp_write ( char *file_out_name, unsigned long int width, long int height, 
   		//unsigned char *rarray, unsigned char *garray, unsigned char *barray );
+// Note: the file read must have the correct width and height to begin with 
+bmp_read("worldMap.bmp", widthTextureMap, heightTexturemap, &rbuffer, &gbuffer, &bbuffer); 
+std::cout <<" I AM HERE " << std::endl; 
+	unsigned char* _rbuffer;
+	unsigned char* _gbuffer;
+	unsigned char* _bbuffer;
+// test to see if data is correct
+	_rbuffer = new unsigned char[numbytesTextureMap];
+	_gbuffer = new unsigned char[numbytesTextureMap];
+	_bbuffer = new unsigned char[numbytesTextureMap];
+	for (int i = 0; i < height; i++) 
+	{
+		for (int j = 0; j < width; j++) 
+		{
+std::cout <<" i is : " << i << " j is: "<< j << std::endl; 
+			_rbuffer[i*width+j] = (rbuffer[i*width+j]) ;
+			_gbuffer[i*width+j] = (gbuffer[i*width+j]);
+			_bbuffer[i*width+j] = (bbuffer[i*width+j]);
+		}
+	}
+std::cout <<" I AM HERE TOO" << std::endl; 
+	bmp_write( "output.bmp", width, height, _rbuffer, _gbuffer, _bbuffer );
+	delete _rbuffer;
+	delete _gbuffer;
+	delete _bbuffer;
+	return 0; 
+}// end of if statement for texture map
 
-// Testing bmp read
-if(bmp_read_test("worldMap.bmp")) std::cout<<"ReadWorldmap" << std::endl; 
-else std::cout<<"FailedToRead" << std::endl; */
 //-------------------------------------------------------------------------------------
 
 	// Camera parameters.
