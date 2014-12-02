@@ -31,9 +31,10 @@
 //#define PARTONEFULL 1 	// has antialias, without shadows 
 //#define SOFTSHADOW 1 // demonstrates soft shadows
 //#define DEPTHOFFIELD 1 // demonstrates use of depth of field with 30 antialiasing (2 minute compile per pic)
+//#define TEXTUREMAPPINGSPHERE 1
+// TODO: 
 //#define GLOSSYREFLECTION 1
-#define TEXTUREMAPPINGSPHERE 1
-//#define MOTIONBLUR 1
+#define MOTIONBLUR 1
 
 //----------------------------------------------------------------------------------------------------------
 
@@ -101,25 +102,7 @@
 #define DOMOTIONBLUR 0 //  1 means do motion blur, 0 means do not.  
 #endif 
 
-//---------------------------------------------------------------------------------------
-// TODO: BELOW IS STILL UNDER PROGRESS (works but reflect both ways for now) 
-//TODO:  Part 2: c) Glossy Reflection 
-#ifdef GLOSSYREFLECTION
-#define SCALESPHERE 0 // 1 means scale the sphere, 0 means don't 
-#define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual  
-#define NOSHADOW 1 // Turn off shadows  
-#define NUMLIGHTS 6.0 // useless for now 
-#define OFFSET 0.3   // offset not used cause no head lights 
-#define NUMANTIALIASE 1 // no antialias 
-#define RAYDEPTH 2// reflection occurs 
-#define HEADLIGHTS 0 // use point lights (no soft shadows) 
-#define DODEPTHOFFIELD 0 //means no depth of field  
-#define FOCALLENGTH 5 // focal length for depth of field 
-#define DOTEXTUREMAPSPHERE 0 // 1 means do texture map on sphere, 0 means not. 
-#define DOMOTIONBLUR 0 // 1 means do motion blur, 0 means do not. 
-#endif 
-
-// Part 2: d) Texture Mapping on sphere
+// Part 2: c) Texture Mapping on sphere
 #ifdef TEXTUREMAPPINGSPHERE
 #define SCALESPHERE 0 // 1 means scale the sphere, 0 means don't 
 #define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual  
@@ -132,6 +115,31 @@
 #define DODEPTHOFFIELD 0 //means no depth of field  
 #define FOCALLENGTH 5 // focal length for depth of field 
 #define DOTEXTUREMAPSPHERE 1 // 1 means do texture map on sphere, 0 means not. 
+#define DOMOTIONBLUR 0 // 1 means do motion blur, 0 means do not. 
+#endif 
+
+// Global buffers for texture map, these are global and used in light_source.cpp as well  
+	unsigned char* rbuffer; 
+	unsigned char* gbuffer; 
+	unsigned char* bbuffer; 
+	int width = 320; 
+	int height = 240; 
+
+//---------------------------------------------------------------------------------------
+// TODO: BELOW IS STILL UNDER PROGRESS (works but reflect both ways for now) 
+//TODO:  Part 2: d) Glossy Reflection 
+#ifdef GLOSSYREFLECTION
+#define SCALESPHERE 0 // 1 means scale the sphere, 0 means don't 
+#define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual  
+#define NOSHADOW 1 // Turn off shadows  
+#define NUMLIGHTS 6.0 // useless for now 
+#define OFFSET 0.3   // offset not used cause no head lights 
+#define NUMANTIALIASE 1 // no antialias 
+#define RAYDEPTH 2// reflection occurs 
+#define HEADLIGHTS 0 // use point lights (no soft shadows) 
+#define DODEPTHOFFIELD 0 //means no depth of field  
+#define FOCALLENGTH 5 // focal length for depth of field 
+#define DOTEXTUREMAPSPHERE 0 // 1 means do texture map on sphere, 0 means not. 
 #define DOMOTIONBLUR 0 // 1 means do motion blur, 0 means do not. 
 #endif 
 
@@ -191,6 +199,11 @@ SceneDagNode* Raytracer::addObject( SceneDagNode* parent, SceneObject* obj, Mate
 	node->next = NULL;
 	// Initialize the child to NULL, transformation applied to this node will be applied to child
 	node->child = NULL;
+/*
+	// Initialize centers to 0 
+	obj->Center[0] = 0; 
+	obj->Center[1] = 0; 
+	obj->Center[2] = 0; */
 	
 	// Add the object to the parent's child list, this means
 	// whatever transformation applied to the parent will also
@@ -287,7 +300,11 @@ void Raytracer::translate( SceneDagNode* node, Vector3D trans ) {
 	// Node => The SceneDagNode that stores the SceneObject and material properties
 		// as well as all the transformation it has to be multiplied into 
 	Matrix4x4 translation;
-	
+
+/*	node->obj->Center[0] += trans[0]; 
+	node->obj->Center[1] += trans[1]; 
+	node->obj->Center[2] += trans[2]; */
+
 	translation[0][3] = trans[0];
 	translation[1][3] = trans[1];
 	translation[2][3] = trans[2];
@@ -442,7 +459,7 @@ void Raytracer::computeShading( Ray3D& ray )
 		}
 		if(NOSHADOW == 1) isInShadow = false; // always make it not in shadow 
 			
-		curLight->light->shade(ray, isInShadow, ONLYAMBIENT);
+		curLight->light->shade(ray, isInShadow, ONLYAMBIENT,DOTEXTUREMAPSPHERE);
 		curLight = curLight->next;
 	}
 	//Done looping through all lights, now compute reflection 
@@ -805,8 +822,7 @@ int main(int argc, char* argv[])
 		//-------------------------------------------------
 
 	// Set default width and height of the pixel screen 
-	int width = 320; 
-	int height = 240; 
+
 
 	// Update width and height if given in commandline 
 	if (argc == 3) 
@@ -819,10 +835,8 @@ int main(int argc, char* argv[])
 if(DOTEXTUREMAPSPHERE == 1)
 {
 	
-// For texture map 
-	unsigned char* rbuffer; 
-	unsigned char* gbuffer; 
-	unsigned char* bbuffer; 
+// For texture map, the buffers are defined globally  
+
 	
 	// Initialize the buffers 
 	int numbytesTextureMap = width * height * sizeof(unsigned char);
@@ -849,7 +863,7 @@ long int* heightTexturemap = new long int(height);
   		//unsigned char *rarray, unsigned char *garray, unsigned char *barray );
 // Note: the file read must have the correct width and height to begin with 
 bmp_read("worldMap.bmp", widthTextureMap, heightTexturemap, &rbuffer, &gbuffer, &bbuffer); 
-std::cout <<" I AM HERE " << std::endl; 
+std::cout <<" Finished reading: " << "worldMap.bmp" << std::endl; 
 	unsigned char* _rbuffer;
 	unsigned char* _gbuffer;
 	unsigned char* _bbuffer;
@@ -861,19 +875,25 @@ std::cout <<" I AM HERE " << std::endl;
 	{
 		for (int j = 0; j < width; j++) 
 		{
-std::cout <<" i is : " << i << " j is: "<< j << std::endl; 
+//std::cout <<" i is : " << i << " j is: "<< j << std::endl; 
 			_rbuffer[i*width+j] = (rbuffer[i*width+j]) ;
 			_gbuffer[i*width+j] = (gbuffer[i*width+j]);
 			_bbuffer[i*width+j] = (bbuffer[i*width+j]);
 		}
 	}
-std::cout <<" I AM HERE TOO" << std::endl; 
+//std::cout <<" I AM HERE TOO" << std::endl; 
 	bmp_write( "output.bmp", width, height, _rbuffer, _gbuffer, _bbuffer );
 	delete _rbuffer;
 	delete _gbuffer;
 	delete _bbuffer;
-	return 0; 
+
+	//return 0; 		std::cout<<"1: "<< ray.col[0] << " 2: " << ray.col[1] << " 3: " << ray.col[2] <<std::endl; 
 }// end of if statement for texture map
+
+// Here, successfully read texture map into 
+// rbuffer
+// gbuffer
+// bbuffer 
 
 //-------------------------------------------------------------------------------------
 
@@ -891,14 +911,14 @@ std::cout <<" I AM HERE TOO" << std::endl;
 	// Create materials with AmbientColor, DiffuseColor, SpecularcColor, and SpecularExponent 
 	// Note: Material is used for shading 
 	// Material 1: Gold
-	Material gold( Colour(0.3, 0.3, 0.3), Colour(0.75164, 0.60648, 0.22648), Colour(0.628281, 0.555802, 0.366065), 51.2);
+	Material gold( Colour(0.3, 0.3, 0.3), Colour(0.75164, 0.60648, 0.22648), Colour(0.628281, 0.555802, 0.366065), 51.2, DOTEXTUREMAPSPHERE); // 1 => sphere does texture map 
 //Material gold( Colour(0.3, 0.3, 0.3), Colour(0.75164, 0.60648, 0.22648), Colour(0.628281, 0.555802, 0.366065), 1); // Test: Material with lower exponent 
 	// Material 2: Jade
-	Material jade( Colour(0, 0, 0), Colour(0.54, 0.89, 0.63), Colour(0.316228, 0.316228, 0.316228), 12.8 );
+	Material jade( Colour(0, 0, 0), Colour(0.54, 0.89, 0.63), Colour(0.316228, 0.316228, 0.316228), 12.8 , 0 ); // 0 => No texture map 
 
 //	Material jade( Colour(0, 0, 0), Colour(0.54, 0.89, 0.63), Colour(0.316228, 0.316228, 0.316228), 1 );	
 
-	Material mud( Colour(0.6, 0.0, 0.0), Colour(0.75164, 0.60648, 0.22648),Colour(0.628281, 0.555802, 0.366065),32.2);
+	Material mud( Colour(0.6, 0.0, 0.0), Colour(0.75164, 0.60648, 0.22648),Colour(0.628281, 0.555802, 0.366065),32.2, 0 );
 
 	// NOTE: Can only use HeadLight or Light Source but not both! 
 if(HEADLIGHTS==1)

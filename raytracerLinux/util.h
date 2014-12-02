@@ -181,9 +181,14 @@ struct Material {
 	// Specular exponent.
 	double specular_exp;
 
+	// ImageMapping
+	int imageMap; // 0 => no image mapping
+	               // 1 =>image map to worldmap
+			// 2 =>something else 
+
 	// Constructor 
-	Material( Colour ambient, Colour diffuse, Colour specular, double exp ) :
-		ambient(ambient), diffuse(diffuse), specular(specular), specular_exp(exp) {}
+	Material( Colour ambient, Colour diffuse, Colour specular, double exp , int _imageMap) :
+		ambient(ambient), diffuse(diffuse), specular(specular), specular_exp(exp), imageMap(_imageMap) {}
 };
 
 struct Intersection {
@@ -194,6 +199,9 @@ struct Intersection {
 	    // (i.e. point = ray.origin + t_value * ray.dir)
 	// Location of intersection.
 	Point3D point;
+
+	Point3D CenterPoint; // added center point of object for intersection 
+
 	// Normal at the intersection.
 	Vector3D normal;
 	// Material at the intersection.

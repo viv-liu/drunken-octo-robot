@@ -13,6 +13,10 @@
 // PointLight (child of LightSource) 
 //---------------------
 #include "util.h"
+#ifndef M_PI
+#define M_PI	3.14159265358979323846
+#endif
+
 
 // Base class for a light source.  You could define different types
 // of lights here, but point light is sufficient for most scenes you
@@ -20,7 +24,7 @@
 class LightSource {
 public:
 	// Apply Shading 
-	virtual void shade( Ray3D&, bool isInShadow, int onlyAmbient ) = 0;
+	virtual void shade( Ray3D&, bool isInShadow, int onlyAmbient, int textureMap) = 0;
 	// Get position 
 	virtual Point3D get_position() const = 0; 
 };
@@ -41,6 +45,6 @@ public:
 	PointLight( Point3D pos, Colour ambient, Colour diffuse, Colour specular ) 
 	: _pos(pos), _col_ambient(ambient), _col_diffuse(diffuse), 
 	_col_specular(specular) {}
-	void shade( Ray3D& ray, bool isInShadow, int onlyAmbient );
+	void shade( Ray3D& ray, bool isInShadow, int onlyAmbient, int textureMap );
 	Point3D get_position() const { return _pos; }	
 };

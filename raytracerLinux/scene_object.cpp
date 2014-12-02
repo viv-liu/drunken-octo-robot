@@ -97,7 +97,9 @@ bool UnitSquare::intersect( Ray3D& ray, const Matrix4x4& worldToModel, const Mat
 			ray.intersection.t_value = t_value;
 			ray.intersection.point = modelToWorld * Point3D(x, y, 0);
 			ray.intersection.normal = Vector3D(0, 0, 1);
-			
+
+			// For Image Mapping 			
+			ray.intersection.CenterPoint = modelToWorld * Point3D(0,0,0); // every model thinks it is in the center 
 			ray.intersection.normal = transNorm(worldToModel, ray.intersection.normal);
 			ray.intersection.normal.normalize();
 			ray.intersection.none = false;
@@ -176,7 +178,10 @@ bool UnitSphere::intersect( Ray3D& ray, const Matrix4x4& worldToModel,
 		ray.intersection.t_value = t_value;		
 		ray.intersection.point = modelToWorld * Point3D(x, y, z);
 		ray.intersection.normal = transNorm(worldToModel, intersection);
-		ray.intersection.normal.normalize();		
+		ray.intersection.normal.normalize();	
+
+		// FOR TEXTURE MAPPING!
+		ray.intersection.CenterPoint = modelToWorld * Point3D(0,0,0); // every model thinks it is in the center 
 
 		ray.intersection.none = false;
 
