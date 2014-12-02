@@ -32,9 +32,10 @@
 //#define SOFTSHADOW 1 // demonstrates soft shadows
 //#define DEPTHOFFIELD 1 // demonstrates use of depth of field with 30 antialiasing (2 minute compile per pic)
 //#define TEXTUREMAPPINGSPHERE 1
+#define MOTIONBLUR 1
 // TODO: 
-#define GLOSSYREFLECTION 1
-//#define MOTIONBLUR 1
+//#define GLOSSYREFLECTION 1
+
 
 //----------------------------------------------------------------------------------------------------------
 
@@ -53,6 +54,7 @@
 #define DOTEXTUREMAPSPHERE 0 // 1 means do texture map on sphere, 0 means not. 
 #define DOMOTIONBLUR 0 //  means do motion blur, 0 means do not. 
 #define NUMGLOSSY 5 // number of times to reshoot glossy for reflection 
+#define NUMMOTIONBLUR 5 // length of motion blur to move
 #endif 
 
 // Full of part 1 
@@ -70,9 +72,10 @@
 #define DOTEXTUREMAPSPHERE 0 // 1 means do texture map on sphere, 0 means not. 
 #define DOMOTIONBLUR 0 //  means do motion blur, 0 means do not. 
 #define NUMGLOSSY 5 // number of times to reshoot glossy for reflection 
+#define NUMMOTIONBLUR 5 // length of motion blur to move 
 #endif 
 
-// Part 2: a) Soft Shadows 
+// Part 2: a) Soft Shadows #define NUMMOTIONBLUR 10 // length of motion blur to move 
 #ifdef SOFTSHADOW 
 #define SCALESPHERE 1 // 1 means scale the sphere, 0 means don't 
 #define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual  
@@ -88,6 +91,7 @@
 #define DOTEXTUREMAPSPHERE 0 // 1 means do texture map on sphere, 0 means not. 
 #define DOMOTIONBLUR 0 //  means do motion blur, 0 means do not. 
 #define NUMGLOSSY 5 // number of times to reshoot glossy for reflection 
+#define NUMMOTIONBLUR 5// length of motion blur to move 
 #endif 
 
 // Part 2: b) Depth of Field  (note: This takes long to run due to needed high number of aliasing. 
@@ -105,6 +109,7 @@
 #define DOTEXTUREMAPSPHERE 0 // 1 means do texture map on sphere, 0 means not.
 #define DOMOTIONBLUR 0 //  1 means do motion blur, 0 means do not.  
 #define NUMGLOSSY 5 // number of times to reshoot glossy for reflection 
+#define NUMMOTIONBLUR 5 // length of motion blur to move 
 #endif 
 
 // Part 2: c) Texture Mapping on sphere
@@ -122,6 +127,7 @@
 #define DOTEXTUREMAPSPHERE 1 // 1 means do texture map on sphere, 0 means not. 
 #define DOMOTIONBLUR 0 // 1 means do motion blur, 0 means do not. 
 #define NUMGLOSSY 5 // number of times to reshoot glossy for reflection 
+#define NUMMOTIONBLUR 5 // length of motion blur to move 
 #endif 
 
 // Global buffers for texture map, these are global and used in light_source.cpp as well  
@@ -131,9 +137,28 @@
 	int width = 320; 
 	int height = 240; 
 
+
+// Part 2: d) Motion Blur 
+#ifdef MOTIONBLUR
+#define SCALESPHERE 0 // 1 means scale the sphere, 0 means don't 
+#define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual  
+#define NOSHADOW 1 // Turn off shadows  
+#define NUMLIGHTS 6.0 // useless for now 
+#define OFFSET 0.3   // offset not used cause no head lights 
+#define NUMANTIALIASE 1 // no antialias 
+#define RAYDEPTH 1// no reflection  
+#define HEADLIGHTS 0 // use point lights (no soft shadows) 
+#define DODEPTHOFFIELD 0 //means no depth of field  
+#define FOCALLENGTH 5 // focal length for depth of field 
+#define DOTEXTUREMAPSPHERE 0 // 1 means do texture map on sphere, 0 means not. 
+#define DOMOTIONBLUR 1 // 1 means do motion blur, 0 means do not. 
+#define NUMGLOSSY 1 // number of times to reshoot glossy for reflection 
+#define NUMMOTIONBLUR 5 // length of motion blur to move 
+#endif 
+
 //---------------------------------------------------------------------------------------
 // TODO: BELOW IS STILL UNDER PROGRESS (works but reflect both ways for now) 
-//TODO:  Part 2: d) Glossy Reflection 
+//TODO:  Part 2: e) Glossy Reflection 
 #ifdef GLOSSYREFLECTION
 #define SCALESPHERE 0 // 1 means scale the sphere, 0 means don't 
 #define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual  
@@ -149,26 +174,16 @@
 #define DOMOTIONBLUR 0 // 1 means do motion blur, 0 means do not. 
 // Set NUMGLOSSY to 1 for no glossy reflection (perfect reflection)  
 #define NUMGLOSSY 5 // number of times to reshoot glossy for reflection 
+#define NUMMOTIONBLUR 5 // length of motion blur to move 
 #endif 
 
-// Part 2: e) Motion Blur 
-#ifdef MOTIONBLUR
-#define SCALESPHERE 0 // 1 means scale the sphere, 0 means don't 
-#define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual  
-#define NOSHADOW 1 // Turn off shadows  
-#define NUMLIGHTS 6.0 // useless for now 
-#define OFFSET 0.3   // offset not used cause no head lights 
-#define NUMANTIALIASE 1 // no antialias 
-#define RAYDEPTH 1// no reflection  
-#define HEADLIGHTS 0 // use point lights (no soft shadows) 
-#define DODEPTHOFFIELD 0 //means no depth of field  
-#define FOCALLENGTH 5 // focal length for depth of field 
-#define DOTEXTUREMAPSPHERE 0 // 1 means do texture map on sphere, 0 means not. 
-#define DOMOTIONBLUR 1 // 1 means do motion blur, 0 means do not. 
-#define NUMGLOSSY 5 // number of times to reshoot glossy for reflection 
-#endif 
 
 // Part 2: f) Refraction or Cylinder, whichever is easier 
+// Refraction is difficult cause need another helper recursive function
+// that detects if you enter an object, go inside in a different path
+// and exit with the new ray calculated based on the new object entered 
+// basically the whatever refraction law, easy to understand, complicated to implement
+// need to handle backfacing etc. 
 //----------------------------------------------------------------------------------------------------------
 
 // For offset Shadowing
@@ -681,9 +696,15 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view, Vecto
 	// Initialize the viewToWorld Matrix given the camera properties 
 	viewToWorld = initInvViewMatrix(eye, view, up);
 	
-	int NUMMOTIONBLUR = 1; 
+	int numMotion = 0; 
+	int limit = 0; 
+	if(DOMOTIONBLUR == 1) 
+	{
+		numMotion = NUMMOTIONBLUR; // execute normally if no motion blur 
+		limit = 1; 
+	}	
 	// 20 times for motion blur 
-	for(int lkj = 0; lkj < NUMMOTIONBLUR; lkj++)
+	for(int lkj = numMotion; lkj >=limit ; lkj--)
 	{
 	// Construct a ray for each pixel.
 	for (int i = 0; i < _scrHeight; i++) 
@@ -800,28 +821,23 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view, Vecto
 			col[1] /= (double) NUMANTIALIASE; 
 			col[2] /= (double) NUMANTIALIASE;  
 			// Finally, color the pixel based on the color that was given 
-			_rbuffer[i*width+j] = int(col[0]*255);
-			_gbuffer[i*width+j] = int(col[1]*255);
-			_bbuffer[i*width+j] = int(col[2]*255);
+			// Add less and less each sweep 
+			_rbuffer[i*width+j] += int(col[0]*255)/(double)pow(2.0,lkj);
+			_gbuffer[i*width+j] += int(col[1]*255)/(double)pow(2.0,lkj);
+			_bbuffer[i*width+j] += int(col[2]*255)/(double)pow(2.0,lkj);;
 		}
 	}
 			if(DOMOTIONBLUR == 1)
 			{
 				// move the sphere
-		this->translate(node, Vector3D(0, 0.1 , 0));	
+		this->translate(node, Vector3D(0, 0.5 , 0));	
 			}
 	} // MOTION BLUR 
-	// Finally, divide by the number of times it loop through motion blur 
-	for (int i = 0; i < _scrHeight; i++) 
-	{
-
-		for (int j = 0; j < _scrWidth; j++) 
-		{
-			_rbuffer[i*width+j]/(double)NUMMOTIONBLUR; 
-			_gbuffer[i*width+j]/(double)NUMMOTIONBLUR; 
-			_bbuffer[i*width+j]/(double)NUMMOTIONBLUR; 
-		}	
-	}
+			if(DOMOTIONBLUR == 1)
+			{
+				// Reset the sphere to original position. 
+			this->translate(node, Vector3D(0, -0.5*numMotion , 0));	
+			}
 	// Finally, flush the entire pixelbuffer to the file name given. 
 	flushPixelBuffer(fileName);
 }
@@ -993,14 +1009,14 @@ else
 	// Create a factor for scaling (ScaleX, ScaleY, ScaleZ) 
 	double factor1[3] = { 1.0, 2.0, 1.0 };
 	double factor2[3] = { 6.0, 6.0, 6.0 };
-	double factor3[3] = { 3.0, 3.0, 3.0 };
+	double factor3[3] = { 1.0, 1.0, 1.0 };
 	// Do transformations on sphere 
 	// Add the translation matrix to the sphere's list of transformation and inverse transformation 
 	raytracer.translate(sphere, Vector3D(0, 0, -5));	
 	// Similarly, add rotations and scaling 
 	raytracer.rotate(sphere, 'x', -45); 
 	raytracer.rotate(sphere, 'z', 45); 
-	if (SCALESPHERE == 1)	raytracer.scale(sphere, Point3D(0, 0, 0), factor1);
+	if (SCALESPHERE == 1 && DOMOTIONBLUR == 0)	raytracer.scale(sphere, Point3D(0, 0, 0), factor1);
 	// Add the translation matrix to the sphere's list of transformation and inverse transformation 
 	raytracer.translate(sphereTwo, Vector3D(2, 2, -5));	
 	// Similarly, add rotations and scaling 
