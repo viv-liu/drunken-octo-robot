@@ -117,12 +117,9 @@ void PointLight::shade( Ray3D& ray, bool isInShadow, int onlyAmbient, int textur
 			ray.col[2] += mat_a[2] * I_a[2];					
 			if(isInShadow == false && onlyAmbient==0 ) 
 			{
-				ray.col[0] += mat_d[0] * I_d[0] * fmax(0, s.dot(ray.intersection.normal)) +
-						 mat_s[0] * I_s[0] * pow(fmax(0, r.dot(b)), alpha);
-				ray.col[1] += mat_d[1] * I_d[1] * fmax(0, s.dot(ray.intersection.normal)) +
-						 mat_s[1] * I_s[1] * pow(fmax(0, r.dot(b)), alpha);
-				ray.col[2] += mat_d[2] * I_d[2] * fmax(0, s.dot(ray.intersection.normal)) +
-						 mat_s[2] * I_s[2] * pow(fmax(0, r.dot(b)), alpha);
+				ray.col[0] += mat_d[0] * I_d[0] * fmax(0, s.dot(ray.intersection.normal))  + mat_s[0] * I_s[0] * pow(fmax(0, r.dot(b)), alpha);
+				ray.col[1] += mat_d[1] * I_d[1] * fmax(0, s.dot(ray.intersection.normal))  + mat_s[1] * I_s[1] * pow(fmax(0, r.dot(b)), alpha);
+				ray.col[2] += mat_d[2] * I_d[2] * fmax(0, s.dot(ray.intersection.normal))  + mat_s[2] * I_s[2] * pow(fmax(0, r.dot(b)), alpha);
 			}
 		}
 		// Clamp values down to 1.0

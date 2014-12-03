@@ -33,10 +33,11 @@
 //#define SOFTSHADOW 1 // demonstrates soft shadows
 //#define DEPTHOFFIELD 1 // demonstrates use of depth of field with 30 antialiasing (2 minute compile per pic)
 //#define TEXTUREMAPPINGSPHERE 1 // texture image map sphere and texture procedural map plane 
-//#define MOTIONBLUR 1
+#define MOTIONBLUR 1
 //#define CYLINDERDRAW 1 // includes both blue cylinder and purple disk 
 //#define GLOSSYREFLECTION 1 
-#define FULLEVERYTHING 1 // takes few hours compile time 
+//#define FULLEVERYTHING 1 // takes few hours compile time 
+//#define ANIMATION 1 // for rendering animation , takes few days to compile 
 
 // to execute, type on terminal: 
 // >> make clean
@@ -62,6 +63,7 @@
 #define NUMMOTIONBLUR 5 // length of motion blur to move
 #define DRAWCYLINDER 0 // 0 means don't draw cylinder
 #define ONLYPARTONE 1 // only do part 1, so 2 shapes only 
+#define DOANIMATION 0 // don't do animation 
 #endif 
 //----------------------------------------------------------------------------------------------------------
 // Full of part 1 
@@ -83,6 +85,7 @@
 #define NUMMOTIONBLUR 5 // length of motion blur to move 
 #define DRAWCYLINDER 0 // 0 means don't draw cylinder
 #define ONLYPARTONE 1 // only do part 1, so 2 shapes only 
+#define DOANIMATION 0 // don't do animation 
 #endif 
 //----------------------------------------------------------------------------------------------------------
 // Part 2:Compulsory One: Shadow
@@ -105,6 +108,7 @@
 #define NUMMOTIONBLUR 5// length of motion blur to move 
 #define DRAWCYLINDER 0 // 0 means don't draw cylinder
 #define ONLYPARTONE 0 // don't only do part 1, so  many shapes 
+#define DOANIMATION 0 // don't do animation 
 #endif 
 //----------------------------------------------------------------------------------------------------------
 // Part 2:Compulsory Two: Reflection  
@@ -127,6 +131,7 @@
 #define NUMMOTIONBLUR 5 // length of motion blur to move 
 #define DRAWCYLINDER 1 // 0 means don't draw cylinder
 #define ONLYPARTONE 0 // don't only do part 1, so  many shapes 
+#define DOANIMATION 0 // don't do animation 
 #endif 
 //----------------------------------------------------------------------------------------------------------
 // Part 2: a) Soft Shadows 
@@ -149,6 +154,7 @@
 #define NUMMOTIONBLUR 5// length of motion blur to move 
 #define DRAWCYLINDER 0 // 0 means don't draw cylinder
 #define ONLYPARTONE 0 // don't only do part 1, so  many shapes 
+#define DOANIMATION 0 // don't do animation 
 #endif 
 //----------------------------------------------------------------------------------------------------------
 // Part 2: b) Depth of Field  (note: This takes long to run due to needed high number of aliasing. 
@@ -170,6 +176,7 @@
 #define NUMMOTIONBLUR 5 // length of motion blur to move 
 #define DRAWCYLINDER 0 // 0 means don't draw cylinder
 #define ONLYPARTONE 0 // don't only do part 1, so  many shapes 
+#define DOANIMATION 0 // don't do animation 
 #endif 
 //----------------------------------------------------------------------------------------------------------
 // Part 2: c) Texture Mapping on sphere
@@ -191,6 +198,7 @@
 #define NUMMOTIONBLUR 5 // length of motion blur to move 
 #define DRAWCYLINDER 0 // 0 means don't draw cylinder
 #define ONLYPARTONE 0 // don't only do part 1, so  many shapes 
+#define DOANIMATION 0 // don't do animation 
 #endif 
 // Global buffers for texture map, these are global and used in light_source.cpp as well  
 	unsigned char* rbuffer; 
@@ -219,6 +227,7 @@
 #define NUMMOTIONBLUR 5 // length of motion blur to move 
 #define DRAWCYLINDER 0 // 0 means don't draw cylinder
 #define ONLYPARTONE 0 // don't only do part 1, so  many shapes 
+#define DOANIMATION 0 // don't do animation 
 #endif 
 //----------------------------------------------------------------------------------------------------------
 // Part 2: e) Cylinder
@@ -241,6 +250,7 @@
 #define NUMMOTIONBLUR 5 // length of motion blur to move 
 #define DRAWCYLINDER 1 // 0 means don't draw cylinder
 #define ONLYPARTONE 0 // don't only do part 1, so  many shapes 
+#define DOANIMATION 0 // don't do animation 
 #endif 
 //----------------------------------------------------------------------------------------------------------
 //  Part 2: f) Glossy Reflection (Additional 1 from 5 required)  
@@ -263,6 +273,7 @@
 #define NUMMOTIONBLUR 5 // length of motion blur to move 
 #define DRAWCYLINDER 1 // 0 means don't draw cylinder
 #define ONLYPARTONE 0 // don't only do part 1, so  many shapes 
+#define DOANIMATION 0 // don't do animation 
 #endif 
 //----------------------------------------------------------------------------------------------------------
 // Everything 
@@ -288,6 +299,33 @@
 #define NUMMOTIONBLUR 5 // length of motion blur to move 
 #define DRAWCYLINDER 1 // 0 means don't draw cylinder
 #define ONLYPARTONE 0 // don't only do part 1, so  many shapes 
+#define DOANIMATION 0 // don't do animation 
+#endif 
+//----------------------------------------------------------------------------------------------------------
+// ANIMATION
+//----------------------------------------------------------------------------------------------------------
+// This executes everything except:
+// depth of field cause that takes too long
+// texture map sphere cause wanna see reflections 
+// glossy reflections cause wanna see perfect scene 
+#ifdef ANIMATION
+#define SCALESPHERE 1 // 1 means scale the sphere, 0 means don't 
+#define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual  
+#define NOSHADOW 0 // Turn on shadows  
+#define NUMLIGHTS 6.0 // 
+#define OFFSET 0.3   // offset not used cause no head lights 
+#define NUMANTIALIASE 20 // anti alias  20 times
+#define RAYDEPTH 2// reflection occurs 
+#define HEADLIGHTS 1 // use head lights (has soft shadows) 
+#define DODEPTHOFFIELD 0 //means with depth of field  
+#define FOCALLENGTH 5 // focal length for depth of field 
+#define DOTEXTUREMAPSPHERE 0 // 1 means do texture map on sphere, 0 means not. 
+#define DOMOTIONBLUR 1 // 1 means do motion blur, 0 means do not. 
+#define NUMGLOSSY 1 // number of times to reshoot glossy for reflection 
+#define NUMMOTIONBLUR 5 // length of motion blur to move 
+#define DRAWCYLINDER 1 // 0 means don't draw cylinder
+#define ONLYPARTONE 0 // don't only do part 1, so  many shapes 
+#define DOANIMATION 1 // do animation (render images for animation) 
 #endif 
 //----------------------------------------------------------------------------------------------------------
 
@@ -1077,7 +1115,9 @@ if(DOTEXTUREMAPSPHERE == 1)
 	// but really it is
 	// root->child->Sphere
 	// root->Sphere->next->plane
-
+// If don't do animation 
+if(DOANIMATION == 0) 
+{	
 	//-----------------------------------------------------------------------------------------------------------
 	// Step3 : Apply transformation to the objects to put them in place 
 	//-----------------------------------------------------------------------------------------------------------
@@ -1125,12 +1165,49 @@ if(DOTEXTUREMAPSPHERE == 1)
 	raytracer.translate(plane, Vector3D(0, 0, -7));	
 	raytracer.rotate(plane, 'z', 45); 
 	raytracer.scale(plane, Point3D(0, 0, 0), factor2);
+}
+// Do animation 
+else
+{
+	double factorPlane[3] = {10, 10, 10};
+	double factorSphere[3] = {1, 1, 1};
+	double factorCyl[3] = { 0.5, 1, 0.5 };
+	SceneDagNode* cylinder = raytracer.addObject( new UnitCylinder(), &cylMat );
 
+	// Do transformations on the plane 
+	/*raytracer.translate(plane, Vector3D(0, 0, -5));	
+	raytracer.rotate(plane, 'x', -90);
+	raytracer.scale(plane, Point3D(0, 0, 0), factorPlane);*/
+	raytracer.translate(plane, Vector3D(0, 0, -7));	
+	raytracer.rotate(plane, 'z', 45); 
+	raytracer.scale(plane, Point3D(0, 0, 0), factorPlane);
+
+	// Transform Sphere
+	raytracer.translate(sphere, Vector3D(-2, 1.5, -5));	
+	raytracer.rotate(sphere, 'x', -45); 
+	raytracer.rotate(sphere, 'z', 45); 
+		
+	// Transform Cylinder		
+	raytracer.translate(cylinder, Vector3D(-2, 0.5, -5));
+	raytracer.scale(cylinder, Point3D(0,0,0), factorCyl);
+
+	// Transform Sphere
+	raytracer.translate(sphere, Vector3D(-3, 1.5, -7));	
+	raytracer.rotate(sphere, 'x', -45); 
+	raytracer.rotate(sphere, 'z', 45); 
+		
+	// Transform Cylinder		
+	raytracer.translate(cylinder, Vector3D(-3, 0.5, -7));
+	raytracer.scale(cylinder, Point3D(0,0,0), factorCyl);
+}
 	//---------------------------------------------------------------------------------------------------------------
 	// Step 4: Render the scene given the width, height, camera location, orientation, frame of view, and direction
 	//---------------------------------------------------------------------------------------------------------------
 	// Render the scene, feel free to make the image smaller for testing purposes.	
 	// Note: Render creates and flushes the pixel buffer in 2 different functions (it creates the pixel buffer in render() and flushes it in flushPixelBuffer() that is called by render() 
+// If don't do animation 
+if(DOANIMATION == 0)
+{
 	raytracer.render(width, height, eye, view, up, fov, "view1.bmp", sphere);	// output the image with name view1.bmp
 	
 	std::cout << "View1.bmp done" << std::endl; 
@@ -1150,6 +1227,38 @@ if(DOTEXTUREMAPSPHERE == 1)
 	Vector3D view4(1, 0, 0);
 	raytracer.render(width, height, eye4, view4, up, fov, "view4.bmp", sphere);	// output the image with name
 	std::cout << "View4.bmp done" << std::endl; 
+
+}
+// Do animation
+else
+{
+		//Point3D eyeAnim(3, 1, 0);
+		//Vector3D viewAnim(-2, 0, -1);
+		//raytracer.render(width, height, eyeAnim, viewAnim, up, fov, "anim.bmp", sphere);	// output the image with name view1.bmp
+
+		// Animation parameters
+		const int NUM_FRAMES = 1;
+		const int TRAVEL_DISTANCE = 10;
+		const int NUM_LIGHTS = 2;
+		const int LIGHT_HEIGHT = 10;
+		const int CAM_SPEED = 0.1;
+		char buffer[50]; // for keeping numbers of image names
+		Point3D curEye;
+
+	// FLYING THROUGH TEETH
+	for(int i = 0; i < NUM_FRAMES; i++) {   
+		// Move teeth together
+ 		
+		snprintf(buffer, sizeof(buffer), "%d%s", i, ".bmp");
+		//raytracer.render(width, height, overViewEye, overViewView, overViewUp, overViewFOV, buffer, sphere);
+		raytracer.render(width, height, curEye, view, up, fov, buffer, sphere);
+		curEye[0] -= CAM_SPEED;
+		curEye[1] -= CAM_SPEED;
+		std::cout << buffer << " done" << std::endl; 
+	}
+	
+		std::cout << "anim1.bmp done" << std::endl; 
+}
 	return 0;
 }
 
