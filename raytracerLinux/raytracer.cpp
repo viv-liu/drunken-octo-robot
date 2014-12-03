@@ -12,12 +12,6 @@
 //The main body of the raytracer, including the scene graph.  Simple 
 // addition and traversal code to the graph are provided to you. 
 
-
-// TODO: Refraction
-// TODO: Arbitrary shape (online has code for cylinder and triangle)
-// TODO: REPORT
-// TODO: See if can fix reflection 
-
 #include "raytracer.h"
 #include "bmp_io.h"
 #include <cmath> // for fmax() 
@@ -25,29 +19,33 @@
 #include <cstdlib>
 #include <time.h> // for random 
 
-// FOR DEBUGGING, NEED TO RUN CODE SLOWER, 
-// 1. CHANGE THE LIGHT TO POINT LIGHT INSTEAD OF HEADLIGHT (no softshadow)
-// 2. CHANGE NUMANTIALIASE TO 1				(worst antialiasing) 
-
+// Dear T.A. for CSC418 Fall 2014, 
+// you can simply run each of our states by uncommenting below. 
+// Except for Depth of Field which compiles for about 2 minutes, everything else should compile the first image within 10 seconds. 
 //----------------------------------------------------------------------------------------------------------
 // MODES for this ray tracer 
 //----------------------------------------------------------------------------------------------------------
 // Note: Uncomment if want them, note: must only uncomment one of these at a time 
 //#define SIGNATURE 1	// only ambient components 
-//#define PARTONEFULL 1 	// has antialias, without shadows 
+#define PARTONEFULL 1 	// has antialias, without shadows 
 //#define SHADOW 1 // normal shadow (compulsory)
 //#define REFLECTION 1 // specular perfect reflection (compulsory) 
 //#define SOFTSHADOW 1 // demonstrates soft shadows
 //#define DEPTHOFFIELD 1 // demonstrates use of depth of field with 30 antialiasing (2 minute compile per pic)
-#define TEXTUREMAPPINGSPHERE 1
+//#define TEXTUREMAPPINGSPHERE 1 // texture image map sphere and texture procedural map plane 
 //#define MOTIONBLUR 1
+//#define CYLINDERDRAW 1 // includes both blue cylinder and purple disk 
 //#define GLOSSYREFLECTION 1 
+//#define FULLEVERYTHING 1 // takes few hours compile time 
 
-
+// to execute, type on terminal: 
+// >> make clean
+// >> make
+// >> ./raytracer 
 //----------------------------------------------------------------------------------------------------------
-
 // Part 1
-#ifdef SIGNATURE // only defien if SIGNATURE is defined 
+//----------------------------------------------------------------------------------------------------------
+#ifdef SIGNATURE // only define if SIGNATURE is defined 
 #define SCALESPHERE 1 // 1 means scale the sphere, 0 means don't 
 #define ONLYAMBIENT 1 // only ambient 1 means no other phong shading 
 #define NOSHADOW 1 // 1 means shadow is always off 
@@ -62,9 +60,12 @@
 #define DOMOTIONBLUR 0 //  means do motion blur, 0 means do not. 
 #define NUMGLOSSY 5 // number of times to reshoot glossy for reflection 
 #define NUMMOTIONBLUR 5 // length of motion blur to move
+#define DRAWCYLINDER 0 // 0 means don't draw cylinder
+#define ONLYPARTONE 1 // only do part 1, so 2 shapes only 
 #endif 
-
+//----------------------------------------------------------------------------------------------------------
 // Full of part 1 
+//----------------------------------------------------------------------------------------------------------
 #ifdef PARTONEFULL 
 #define SCALESPHERE 1 // 1 means scale the sphere, 0 means don't 
 #define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual 
@@ -80,9 +81,12 @@
 #define DOMOTIONBLUR 0 //  means do motion blur, 0 means do not. 
 #define NUMGLOSSY 5 // number of times to reshoot glossy for reflection 
 #define NUMMOTIONBLUR 5 // length of motion blur to move 
+#define DRAWCYLINDER 0 // 0 means don't draw cylinder
+#define ONLYPARTONE 1 // only do part 1, so 2 shapes only 
 #endif 
-
-// Part 2:Compulsory One
+//----------------------------------------------------------------------------------------------------------
+// Part 2:Compulsory One: Shadow
+//----------------------------------------------------------------------------------------------------------
 #ifdef SHADOW 
 #define SCALESPHERE 1 // 1 means scale the sphere, 0 means don't 
 #define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual  
@@ -99,9 +103,12 @@
 #define DOMOTIONBLUR 0 //  means do motion blur, 0 means do not. 
 #define NUMGLOSSY 5 // number of times to reshoot glossy for reflection 
 #define NUMMOTIONBLUR 5// length of motion blur to move 
+#define DRAWCYLINDER 0 // 0 means don't draw cylinder
+#define ONLYPARTONE 0 // don't only do part 1, so  many shapes 
 #endif 
-
-// Part 2:Compulsory Two //FIXME: 
+//----------------------------------------------------------------------------------------------------------
+// Part 2:Compulsory Two: Reflection  
+//----------------------------------------------------------------------------------------------------------
 #ifdef REFLECTION
 #define SCALESPHERE 0 // 1 means scale the sphere, 0 means don't 
 #define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual  
@@ -118,9 +125,12 @@
 // Set NUMGLOSSY to 1 for no glossy reflection (perfect reflection)  
 #define NUMGLOSSY 1 // do perfect reflection 
 #define NUMMOTIONBLUR 5 // length of motion blur to move 
+#define DRAWCYLINDER 1 // 0 means don't draw cylinder
+#define ONLYPARTONE 0 // don't only do part 1, so  many shapes 
 #endif 
-
-// Part 2: a) Soft Shadows #define NUMMOTIONBLUR 10 // length of motion blur to move 
+//----------------------------------------------------------------------------------------------------------
+// Part 2: a) Soft Shadows 
+//----------------------------------------------------------------------------------------------------------
 #ifdef SOFTSHADOW 
 #define SCALESPHERE 1 // 1 means scale the sphere, 0 means don't 
 #define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual  
@@ -137,9 +147,12 @@
 #define DOMOTIONBLUR 0 //  means do motion blur, 0 means do not. 
 #define NUMGLOSSY 5 // number of times to reshoot glossy for reflection 
 #define NUMMOTIONBLUR 5// length of motion blur to move 
+#define DRAWCYLINDER 0 // 0 means don't draw cylinder
+#define ONLYPARTONE 0 // don't only do part 1, so  many shapes 
 #endif 
-
+//----------------------------------------------------------------------------------------------------------
 // Part 2: b) Depth of Field  (note: This takes long to run due to needed high number of aliasing. 
+//----------------------------------------------------------------------------------------------------------
 #ifdef DEPTHOFFIELD 
 #define SCALESPHERE 1 // 1 means scale the sphere, 0 means don't 
 #define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual  
@@ -155,9 +168,12 @@
 #define DOMOTIONBLUR 0 //  1 means do motion blur, 0 means do not.  
 #define NUMGLOSSY 5 // number of times to reshoot glossy for reflection 
 #define NUMMOTIONBLUR 5 // length of motion blur to move 
+#define DRAWCYLINDER 0 // 0 means don't draw cylinder
+#define ONLYPARTONE 0 // don't only do part 1, so  many shapes 
 #endif 
-
+//----------------------------------------------------------------------------------------------------------
 // Part 2: c) Texture Mapping on sphere
+//----------------------------------------------------------------------------------------------------------
 #ifdef TEXTUREMAPPINGSPHERE
 #define SCALESPHERE 0 // 1 means scale the sphere, 0 means don't 
 #define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual  
@@ -173,8 +189,9 @@
 #define DOMOTIONBLUR 0 // 1 means do motion blur, 0 means do not. 
 #define NUMGLOSSY 5 // number of times to reshoot glossy for reflection 
 #define NUMMOTIONBLUR 5 // length of motion blur to move 
+#define DRAWCYLINDER 0 // 0 means don't draw cylinder
+#define ONLYPARTONE 0 // don't only do part 1, so  many shapes 
 #endif 
-
 // Global buffers for texture map, these are global and used in light_source.cpp as well  
 	unsigned char* rbuffer; 
 	unsigned char* gbuffer; 
@@ -182,8 +199,9 @@
 	int width = 320; 
 	int height = 240; 
 
-
+//----------------------------------------------------------------------------------------------------------
 // Part 2: d) Motion Blur 
+//----------------------------------------------------------------------------------------------------------
 #ifdef MOTIONBLUR
 #define SCALESPHERE 0 // 1 means scale the sphere, 0 means don't 
 #define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual  
@@ -199,9 +217,34 @@
 #define DOMOTIONBLUR 1 // 1 means do motion blur, 0 means do not. 
 #define NUMGLOSSY 1 // number of times to reshoot glossy for reflection 
 #define NUMMOTIONBLUR 5 // length of motion blur to move 
+#define DRAWCYLINDER 0 // 0 means don't draw cylinder
+#define ONLYPARTONE 0 // don't only do part 1, so  many shapes 
 #endif 
-
-//FIXME:  Part 2: e) Glossy Reflection 
+//----------------------------------------------------------------------------------------------------------
+// Part 2: e) Cylinder
+//----------------------------------------------------------------------------------------------------------
+#ifdef CYLINDERDRAW
+#define SCALESPHERE 0 // 1 means scale the sphere, 0 means don't 
+#define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual  
+#define NOSHADOW 1 // Turn off shadows  
+#define NUMLIGHTS 6.0 // useless for now 
+#define OFFSET 0.3   // offset not used cause no head lights 
+#define NUMANTIALIASE 1 // no antialias 
+#define RAYDEPTH 1// no reflection 
+#define HEADLIGHTS 0 // use point lights (no soft shadows) 
+#define DODEPTHOFFIELD 0 //means no depth of field  
+#define FOCALLENGTH 5 // focal length for depth of field 
+#define DOTEXTUREMAPSPHERE 0 // 1 means do texture map on sphere, 0 means not. 
+#define DOMOTIONBLUR 0 // 1 means do motion blur, 0 means do not. 
+// Set NUMGLOSSY to 1 for no glossy reflection (perfect reflection)  
+#define NUMGLOSSY 1 // number of times to reshoot glossy for reflection 
+#define NUMMOTIONBLUR 5 // length of motion blur to move 
+#define DRAWCYLINDER 1 // 0 means don't draw cylinder
+#define ONLYPARTONE 0 // don't only do part 1, so  many shapes 
+#endif 
+//----------------------------------------------------------------------------------------------------------
+//  Part 2: f) Glossy Reflection (Additional 1 from 5 required)  
+//----------------------------------------------------------------------------------------------------------
 #ifdef GLOSSYREFLECTION
 #define SCALESPHERE 0 // 1 means scale the sphere, 0 means don't 
 #define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual  
@@ -218,18 +261,44 @@
 // Set NUMGLOSSY to 1 for no glossy reflection (perfect reflection)  
 #define NUMGLOSSY 5 // number of times to reshoot glossy for reflection 
 #define NUMMOTIONBLUR 5 // length of motion blur to move 
+#define DRAWCYLINDER 1 // 0 means don't draw cylinder
+#define ONLYPARTONE 0 // don't only do part 1, so  many shapes 
 #endif 
+//----------------------------------------------------------------------------------------------------------
+// Everything 
+//----------------------------------------------------------------------------------------------------------
+// This executes everything except:
+// depth of field cause that takes too long
+// texture map sphere cause wanna see reflections 
+// glossy reflections cause wanna see perfect scene 
+#ifdef FULLEVERYTHING
+#define SCALESPHERE 1 // 1 means scale the sphere, 0 means don't 
+#define ONLYAMBIENT 0 // only ambient 0 means phong shading works as usual  
+#define NOSHADOW 0 // Turn on shadows  
+#define NUMLIGHTS 6.0 // 
+#define OFFSET 0.3   // offset not used cause no head lights 
+#define NUMANTIALIASE 20 // anti alias  20 times
+#define RAYDEPTH 2// reflection occurs 
+#define HEADLIGHTS 1 // use head lights (has soft shadows) 
+#define DODEPTHOFFIELD 0 //means with depth of field  
+#define FOCALLENGTH 5 // focal length for depth of field 
+#define DOTEXTUREMAPSPHERE 0 // 1 means do texture map on sphere, 0 means not. 
+#define DOMOTIONBLUR 1 // 1 means do motion blur, 0 means do not. 
+#define NUMGLOSSY 1 // number of times to reshoot glossy for reflection 
+#define NUMMOTIONBLUR 5 // length of motion blur to move 
+#define DRAWCYLINDER 1 // 0 means don't draw cylinder
+#define ONLYPARTONE 0 // don't only do part 1, so  many shapes 
+#endif 
+//----------------------------------------------------------------------------------------------------------
 
-//---------------------------------------------------------------------------------------
-// TODO:
-// Part 2: f) Refraction or Cylinder, whichever is easier 
+// Note: 
 // Refraction is difficult cause need another helper recursive function
 // that detects if you enter an object, go inside in a different path
 // and exit with the new ray calculated based on the new object entered 
 // basically the whatever refraction law, easy to understand, complicated to implement
 // need to handle backfacing etc. 
-//----------------------------------------------------------------------------------------------------------
 
+//----------------------------------------------------------------------------------------------------------
 // For offset Shadowing
 static bool headLightPresent = false; // this is useless, for now 
 //----------------------------------------------------------------------------------------------------------
@@ -267,12 +336,6 @@ SceneDagNode* Raytracer::addObject( SceneDagNode* parent, SceneObject* obj, Mate
 	node->next = NULL;
 	// Initialize the child to NULL, transformation applied to this node will be applied to child
 	node->child = NULL;
-/*
-	// Initialize centers to 0 
-	obj->Center[0] = 0; 
-	obj->Center[1] = 0; 
-	obj->Center[2] = 0; */
-	
 	// Add the object to the parent's child list, this means
 	// whatever transformation applied to the parent will also
 	// be applied to the child.
@@ -368,11 +431,6 @@ void Raytracer::translate( SceneDagNode* node, Vector3D trans ) {
 	// Node => The SceneDagNode that stores the SceneObject and material properties
 		// as well as all the transformation it has to be multiplied into 
 	Matrix4x4 translation;
-
-/*	node->obj->Center[0] += trans[0]; 
-	node->obj->Center[1] += trans[1]; 
-	node->obj->Center[2] += trans[2]; */
-
 	translation[0][3] = trans[0];
 	translation[1][3] = trans[1];
 	translation[2][3] = trans[2];
@@ -489,10 +547,7 @@ void Raytracer::computeShading( Ray3D& ray )
 					isInShadow = true; 
 				}
 			}
-			// It does not intersect anything on the way to this light, compute the reflection of the light if it does hit something 	
-		//	else // DONT NEED THIS ELSE STATEMENT!!!!!!!!!!!!!!!!!! REFLECT EVERYTHING!!
-		//	{
-/* // This is only a hack for reflection
+/* // This is only a hack for making everything super bright and shiny 
 // can fix by generating every ray as if it is the camera position. 
 				// TODO: CHANGE TO RAY INTERSECTION POINT MAYBE 
 				Vector3D l = Vector3D(intersectPos-lightPos);
@@ -522,8 +577,6 @@ void Raytracer::computeShading( Ray3D& ray )
 				ray.col[2] += colTwo[2]/((RAYDEPTH - reflectRay.depth)*numLightsTemp); 
 				ray.col.clamp();
 */
-		//	}
-			//std::cout<< isInShadow;
 		}
 		if(NOSHADOW == 1) isInShadow = false; // always make it not in shadow 
 			
@@ -539,7 +592,7 @@ void Raytracer::computeShading( Ray3D& ray )
 	l.normalize();
 	Colour colTwo;
 	colTwo[0] = 0;	colTwo[1] = 0;	colTwo[2] = 0;
-Ray3D reflectRay;
+	Ray3D reflectRay;
 
 	for(int lmn = 0; lmn < NUMGLOSSY; lmn++)
 	{
@@ -552,7 +605,6 @@ Ray3D reflectRay;
 		if ((rand() % 10) > 4) rng1*= -1; // deduct instead 
 		if ((rand() % 10) > 4) rng2*= -1; // deduct instead 
 		if ((rand() % 10) > 4) rng3*= -1; // deduct instead 
-//std::cout<<"rng is " <<rng << std::endl; 
 		// only do glossy if NUMGLOSSY is more than 1, else do perfect 
 		if(NUMGLOSSY > 1)
 		{
@@ -563,7 +615,6 @@ Ray3D reflectRay;
 		}
 	// Uncomment below to check later if changes anything 
 	// update the ray Direction to change from the view matrix to the world matrix 
-	//	r = ray.viewToWorldRay3D * r; // note: this matrix is only for eye, to generate one for r, compute all over again
 		// normalize the ray direction 
 		r.normalize();
 		Point3D tempPoint = ray.intersection.point; 
@@ -591,7 +642,7 @@ Ray3D reflectRay;
 	ray.col[2] += (colTwo[2]/(double)NUMGLOSSY)/(double)(RAYDEPTH - reflectRay.depth); 
 
 	// pg 103/785 in pdf 
-	// Multiply with specular reflection to lose energy instead of the reflect ray 
+	// Option 2: Multiply with specular reflection to lose energy instead of the reflect ray 
 /*
 	if(reflectRay.intersection.none == false) 
 	{
@@ -710,10 +761,8 @@ Colour Raytracer::shadeRay( Ray3D& ray)
 		computeShading(ray); 
 		col = ray.col;  
 	}
-
-	// TODO: 
 	// You'll want to call shadeRay recursively (with a different ray, 
-	// of course) here to implement reflection/refraction effects.  
+	// of course) here to implement reflection/refraction effects. (call shade ray in computeShading itself)  
 	return col; 
 }	
 
@@ -750,138 +799,133 @@ void Raytracer::render( int width, int height, Point3D eye, Vector3D view, Vecto
 	// 20 times for motion blur 
 	for(int lkj = numMotion; lkj >=limit ; lkj--)
 	{
-	// Construct a ray for each pixel.
-	for (int i = 0; i < _scrHeight; i++) 
-	{
-
-		for (int j = 0; j < _scrWidth; j++) 
+		// Construct a ray for each pixel.
+		for (int i = 0; i < _scrHeight; i++) 
 		{
-			// Sets up ray origin and direction in view space, image plane is at z = -1.
-			Point3D origin(0, 0, 0); // Create a point called origin 
-			Point3D imagePlane;	// the image plane where it is some distance away from the camera 
+
+			for (int j = 0; j < _scrWidth; j++) 
+			{
+				// Sets up ray origin and direction in view space, image plane is at z = -1.
+				Point3D origin(0, 0, 0); // Create a point called origin 
+				Point3D imagePlane;	// the image plane where it is some distance away from the camera 
 	
-						// It initializes the ray direction 
-	// Original Using Center 
-			imagePlane[0] = (-double(width)/2 + 0.5 + j)/factor; // x position of image plane (factor influences the final width of the image plane) 
-			imagePlane[1] = (-double(height)/2 + 0.5 + i)/factor; // y position of image plane 
-			Colour col; // initialize col 
-			col[0] = 0; col[1] = 0;	col[2] = 0; 
-			srand(time(NULL));  
+							// It initializes the ray direction 
+		// Original Using Center 
+				imagePlane[0] = (-double(width)/2 + 0.5 + j)/factor; // x position of image plane (factor influences the final width of the image plane) 
+				imagePlane[1] = (-double(height)/2 + 0.5 + i)/factor; // y position of image plane 
+				Colour col; // initialize col 
+				col[0] = 0; col[1] = 0;	col[2] = 0; 
+				srand(time(NULL));  
 			
 
-			for(int ij =0; ij < NUMANTIALIASE; ij++)
-			{
-				// Anti-aliasing
-/*
-// ORIGINAL , looking from positive Z_axis 
-				imagePlane[0] = (-double(width)/2 + ((double)rand()/(double)RAND_MAX) + j)/factor;
-				imagePlane[1] = (-double(height)/2 + ((double)rand()/(double)RAND_MAX) + i)/factor;
-				// The smaller this value, the closer the object gets 
-				imagePlane[2] = -1; // z position of image plane 
-*/
-/*
-// Looking from negative X_axis 
-// With camera position: 
-//	Point3D eye3(-1, 0, 0);
-//	Vector3D view3(1, 0, 0);
-				imagePlane[1] = (-double(width)/2 + ((double)rand()/(double)RAND_MAX) + j)/factor;
-				imagePlane[2] = (-double(height)/2 + ((double)rand()/(double)RAND_MAX) + i)/factor;
-				// The smaller this value, the closer the object gets 
-				imagePlane[0] = -1; // x position of image plane 
-*/		
+				for(int ij =0; ij < NUMANTIALIASE; ij++)
+				{
+					// Anti-aliasing
+	/*
+	// ORIGINAL code given , looking from positive Z_axis 
+					imagePlane[0] = (-double(width)/2 + ((double)rand()/(double)RAND_MAX) + j)/factor;
+					imagePlane[1] = (-double(height)/2 + ((double)rand()/(double)RAND_MAX) + i)/factor;
+					// The smaller this value, the closer the object gets 
+					imagePlane[2] = -1; // z position of image plane 
+	*/
+	/*
+	// Looking from negative X_axis 
+	// With camera position: 
+	//	Point3D eye3(-1, 0, 0);
+	//	Vector3D view3(1, 0, 0);
+					imagePlane[1] = (-double(width)/2 + ((double)rand()/(double)RAND_MAX) + j)/factor;
+					imagePlane[2] = (-double(height)/2 + ((double)rand()/(double)RAND_MAX) + i)/factor;
+					// The smaller this value, the closer the object gets 
+					imagePlane[0] = -1; // x position of image plane 
+	*/		
 	
-				// Note: These 3 lines are corrected, you assume it is in the view's coordinates, then you translate into actual world coordinates 
-				imagePlane[0] = (-double(width)/2 + ((double)rand()/(double)RAND_MAX) + j)/factor;
-				imagePlane[1] = (-double(height)/2 + ((double)rand()/(double)RAND_MAX) + i)/factor;
-				// The smaller this value, the closer the object gets 
-				imagePlane[2] = -1; // z position of image plane 
+					// Note: These 3 lines are corrected, you assume it is in the view's coordinates, then you translate into actual world coordinates 
+					imagePlane[0] = (-double(width)/2 + ((double)rand()/(double)RAND_MAX) + j)/factor;
+					imagePlane[1] = (-double(height)/2 + ((double)rand()/(double)RAND_MAX) + i)/factor;
+					// The smaller this value, the closer the object gets 
+					imagePlane[2] = -1; // z position of image plane 
 
-				//std::cout << ((double)rand()/(double)RAND_MAX);
-				// TODO: Convert ray to world space and call 
+					// Construct the ray direction based on the points on the image plane computed 
+					Vector3D rayDir = Vector3D(imagePlane[0], imagePlane[1], imagePlane[2]);
+					// point Aimed is the position of the focal plane in specified direction 
+					Point3D pointAimed; // for depth of field (depends on focal length) 
+					Point3D start = eye; // initialize
+				// If need to do depth of field 
+				if(DODEPTHOFFIELD == 1) 
+				{
+					rayDir = viewToWorld * rayDir;
+					// normalize the ray direction 
+					rayDir.normalize();
+					// start further instead of the usual eye position 
+					pointAimed = eye + FOCALLENGTH*rayDir; 
+					double radius = 1; // radius of the lens 
 
-				// Construct the ray direction based on the points on the image plane computed 
-				Vector3D rayDir = Vector3D(imagePlane[0], imagePlane[1], imagePlane[2]);
-				// point Aimed is the position of the focal plane in specified direction 
-				Point3D pointAimed; // for depth of field (depends on focal length) 
-				Point3D start = eye; // initialize
-			// If need to do depth of field 
-			if(DODEPTHOFFIELD == 1) 
-			{
-				rayDir = viewToWorld * rayDir;
-				// normalize the ray direction 
-				rayDir.normalize();
-				// start further instead of the usual eye position 
-				pointAimed = eye + FOCALLENGTH*rayDir; 
-				double radius = 1; // radius of the lens 
-
-    				double du = rand()/double(RAND_MAX+1);//generating random number
-    				double dv = rand()/double(RAND_MAX+1);
-				// Need jitter position of start (important for depth of field) 
-				// creating new camera position(or ray start using jittering)
-				// Definition of u and v might be wrong,
-				// may need to be direction orthogonal to light direction. 
-				//double u = radius * cos(fov); 
-				//double v = radius * sin(fov); 
-				Vector3D u = up; 
-				Vector3D v = up.cross(view); 
-				start[0]= eye[0] -(radius/2)*u[0]-(radius/2)*v[0]+radius*(du)*u[0]+radius*(dv)*v[0]; 
-				start[1]= eye[1] -(radius/2)*u[1]-(radius/2)*v[1]+radius*(du)*u[1]+radius*(dv)*v[1]; 
-				start[2]= eye[2] -(radius/2)*u[2]-(radius/2)*v[2]+radius*(du)*u[2]+radius*(dv)*v[2]; 
-			         //getting the new direction of ray
-				 rayDir = pointAimed - start;
-				 Ray3D ray = Ray3D(eye, rayDir);
-				 // normalize the ray direction 
-				 rayDir.normalize();
+	    				double du = rand()/double(RAND_MAX+1);//generating random number
+	    				double dv = rand()/double(RAND_MAX+1);
+					// Need jitter position of start (important for depth of field) 
+					// creating new camera position(or ray start using jittering)
+					// Definition of u and v might be wrong,
+					// may need to be direction orthogonal to light direction. 
+					//double u = radius * cos(fov); 
+					//double v = radius * sin(fov); 
+					Vector3D u = up; 
+					Vector3D v = up.cross(view); 
+					start[0]= eye[0] -(radius/2)*u[0]-(radius/2)*v[0]+radius*(du)*u[0]+radius*(dv)*v[0]; 
+					start[1]= eye[1] -(radius/2)*u[1]-(radius/2)*v[1]+radius*(du)*u[1]+radius*(dv)*v[1]; 
+					start[2]= eye[2] -(radius/2)*u[2]-(radius/2)*v[2]+radius*(du)*u[2]+radius*(dv)*v[2]; 
+					 //getting the new direction of ray
+					 rayDir = pointAimed - start;
+					 Ray3D ray = Ray3D(eye, rayDir);
+					 // normalize the ray direction 
+					 rayDir.normalize();
 				
-			}
+				}
 			
-			else
-			{
-				// update the ray Direction to change from the view matrix to the world matrix 
-				rayDir = viewToWorld * rayDir;
-				// normalize the ray direction 
-				rayDir.normalize();
+				else
+				{
+					// update the ray Direction to change from the view matrix to the world matrix 
+					rayDir = viewToWorld * rayDir;
+					// normalize the ray direction 
+					rayDir.normalize();
+				}
+					Ray3D ray = Ray3D(start, rayDir);
+					// Now create the actual ray given the origin and ray direction (from the point origin given above) 
+					// THIS IS DEFINITELY WRONG AS IT IS ONLY
+					// INFLUENCED BY THE EYE DIRECTION AND NOT EYE POSITION 
+					//Ray3D ray = Ray3D(origin, rayDir); // original code : THIS IS WRONG!! YOU NEED START FROM EYE, NOT ORIGIN 
+
+					ray.depth = RAYDEPTH; // go to a ray depth of RAYDEPTH 
+					ray.viewToWorldRay3D = viewToWorld; 
+
+					// Get the color for this pixel by calling the shade ray function 
+					// shadeRay(ray) to generate pixel colour. 	
+					Colour colTwo = shadeRay(ray); 
+					col[0] += colTwo[0]; 
+					col[1] += colTwo[1]; 
+					col[2] += colTwo[2]; 
+				}
+
+				col[0] /= (double) NUMANTIALIASE;  
+				col[1] /= (double) NUMANTIALIASE; 
+				col[2] /= (double) NUMANTIALIASE;  
+				// Finally, color the pixel based on the color that was given 
+				// Add less and less each sweep 
+				_rbuffer[i*width+j] += int(col[0]*255)/(double)pow(2.0,lkj);
+				_gbuffer[i*width+j] += int(col[1]*255)/(double)pow(2.0,lkj);
+				_bbuffer[i*width+j] += int(col[2]*255)/(double)pow(2.0,lkj);;
 			}
-				Ray3D ray = Ray3D(start, rayDir);
-
-
-				// Now create the actual ray given the origin and ray direction (from the point origin given above) 
-				// THIS IS DEFINITELY WRONG AS IT IS ONLY
-				// INFLUENCED BY THE EYE DIRECTION AND NOT EYE POSITION 
-				//Ray3D ray = Ray3D(origin, rayDir); // original code : THIS IS WRONG!! YOU NEED START FROM EYE, NOT ORIGIN 
-
-				ray.depth = RAYDEPTH; // go to a ray depth of RAYDEPTH 
-				ray.viewToWorldRay3D = viewToWorld; 
-
-				// Get the color for this pixel by calling the shade ray function 
-				// shadeRay(ray) to generate pixel colour. 	
-				Colour colTwo = shadeRay(ray); 
-				col[0] += colTwo[0]; 
-				col[1] += colTwo[1]; 
-				col[2] += colTwo[2]; 
-			}
-
-			col[0] /= (double) NUMANTIALIASE;  
-			col[1] /= (double) NUMANTIALIASE; 
-			col[2] /= (double) NUMANTIALIASE;  
-			// Finally, color the pixel based on the color that was given 
-			// Add less and less each sweep 
-			_rbuffer[i*width+j] += int(col[0]*255)/(double)pow(2.0,lkj);
-			_gbuffer[i*width+j] += int(col[1]*255)/(double)pow(2.0,lkj);
-			_bbuffer[i*width+j] += int(col[2]*255)/(double)pow(2.0,lkj);;
 		}
+		if(DOMOTIONBLUR == 1)
+		{
+			// move the sphere
+			this->translate(node, Vector3D(0, 0.5 , 0));	
+		}
+	} 		// MOTION BLUR 
+	if(DOMOTIONBLUR == 1)
+	{
+		// Reset the sphere to original position. 
+		this->translate(node, Vector3D(0, -0.5*numMotion , 0));	
 	}
-			if(DOMOTIONBLUR == 1)
-			{
-				// move the sphere
-		this->translate(node, Vector3D(0, 0.5 , 0));	
-			}
-	} // MOTION BLUR 
-			if(DOMOTIONBLUR == 1)
-			{
-				// Reset the sphere to original position. 
-			this->translate(node, Vector3D(0, -0.5*numMotion , 0));	
-			}
 	// Finally, flush the entire pixelbuffer to the file name given. 
 	flushPixelBuffer(fileName);
 }
@@ -912,10 +956,7 @@ int main(int argc, char* argv[])
 		//	     Matrix4x4		_modelToWorld
 		//	     Matrix4x4		_worldToModel
 		//-------------------------------------------------
-
 	// Set default width and height of the pixel screen 
-
-
 	// Update width and height if given in commandline 
 	if (argc == 3) 
 	{
@@ -926,10 +967,7 @@ int main(int argc, char* argv[])
 //-------------------------------------------------------------------------------------
 if(DOTEXTUREMAPSPHERE == 1)
 {
-	
-// For texture map, the buffers are defined globally  
-
-	
+	// For texture map, the buffers are defined globally  
 	// Initialize the buffers 
 	int numbytesTextureMap = width * height * sizeof(unsigned char);
 	rbuffer = new unsigned char[numbytesTextureMap];
@@ -944,22 +982,16 @@ if(DOTEXTUREMAPSPHERE == 1)
 			bbuffer[i*width+j] = 0;
 		}
 	}
-int temp1 = width;
-int temp2 = height; 
-long unsigned int* widthTextureMap = new long unsigned int(width);
-long int* heightTexturemap = new long int(height); 
-	//bmp_write( file_name, _scrWidth, _scrHeight, _rbuffer, _gbuffer, _bbuffer );
-	//bool bmp_read ( char *file_in_name, unsigned long int *width, long int *height, 
-		//unsigned char **rarray, unsigned char **garray, unsigned char **barray );
-	//bool bmp_write ( char *file_out_name, unsigned long int width, long int height, 
-  		//unsigned char *rarray, unsigned char *garray, unsigned char *barray );
-// Note: the file read must have the correct width and height to begin with 
-bmp_read("worldMap.bmp", widthTextureMap, heightTexturemap, &rbuffer, &gbuffer, &bbuffer); 
-std::cout <<" Finished reading: " << "worldMap.bmp" << std::endl; 
+	int temp1 = width;
+	int temp2 = height; 
+	long unsigned int* widthTextureMap = new long unsigned int(width);
+	long int* heightTexturemap = new long int(height); 
+	bmp_read("worldMap.bmp", widthTextureMap, heightTexturemap, &rbuffer, &gbuffer, &bbuffer); 
+	std::cout <<" Finished reading: " << "worldMap.bmp" << std::endl; 
 	unsigned char* _rbuffer;
 	unsigned char* _gbuffer;    				
 	unsigned char* _bbuffer;
-// test to see if data is correct
+	// test to see if data is correct
 	_rbuffer = new unsigned char[numbytesTextureMap];
 	_gbuffer = new unsigned char[numbytesTextureMap];
 	_bbuffer = new unsigned char[numbytesTextureMap];
@@ -967,28 +999,24 @@ std::cout <<" Finished reading: " << "worldMap.bmp" << std::endl;
 	{
 		for (int j = 0; j < width; j++) 
 		{
-//std::cout <<" i is : " << i << " j is: "<< j << std::endl; 
 			_rbuffer[i*width+j] = (rbuffer[i*width+j]) ;
 			_gbuffer[i*width+j] = (gbuffer[i*width+j]);
 			_bbuffer[i*width+j] = (bbuffer[i*width+j]);
 		}
 	}
-//std::cout <<" I AM HERE TOO" << std::endl; 
 	bmp_write( "output.bmp", width, height, _rbuffer, _gbuffer, _bbuffer );
 	delete _rbuffer;
 	delete _gbuffer;
 	delete _bbuffer;
-
-	//return 0; 		std::cout<<"1: "<< ray.col[0] << " 2: " << ray.col[1] << " 3: " << ray.col[2] <<std::endl; 
 }// end of if statement for texture map
 
-// Here, successfully read texture map into 
+// Here, successfully read texture map into:
 // rbuffer
 // gbuffer
 // bbuffer 
 
 //-------------------------------------------------------------------------------------
-
+// Continue program as usual 
 	// Camera parameters.
 	Point3D eye(0, 0, 1);
 	Vector3D view(0, 0, -1);
@@ -1004,34 +1032,37 @@ std::cout <<" Finished reading: " << "worldMap.bmp" << std::endl;
 	// Note: Material is used for shading 
 	// Material 1: Gold
 	Material gold( Colour(0.3, 0.3, 0.3), Colour(0.75164, 0.60648, 0.22648), Colour(0.628281, 0.555802, 0.366065), 51.2, DOTEXTUREMAPSPHERE); // 1 => sphere does texture map 
-//Material gold( Colour(0.3, 0.3, 0.3), Colour(0.75164, 0.60648, 0.22648), Colour(0.628281, 0.555802, 0.366065), 1); // Test: Material with lower exponent 
+	//Material gold( Colour(0.3, 0.3, 0.3), Colour(0.75164, 0.60648, 0.22648), Colour(0.628281, 0.555802, 0.366065), 1); // Test: Material with lower exponent 
 	// Material 2: Jade
 	int tempJade = 0; 
 	if (DOTEXTUREMAPSPHERE == 1) tempJade = 2; 
 	Material jade( Colour(0, 0, 0), Colour(0.54, 0.89, 0.63), Colour(0.316228, 0.316228, 0.316228), 12.8 , tempJade); // 0 => No texture map 
 
-//	Material jade( Colour(0, 0, 0), Colour(0.54, 0.89, 0.63), Colour(0.316228, 0.316228, 0.316228), 1 );	
+	//	Material jade( Colour(0, 0, 0), Colour(0.54, 0.89, 0.63), Colour(0.316228, 0.316228, 0.316228), 1 );	
 
-	Material mud( Colour(0.6, 0.0, 0.0), Colour(0.75164, 0.60648, 0.22648),Colour(0.628281, 0.555802, 0.366065),32.2, 0 );
+	Material mud( Colour(0.6, 0.0, 0.0), Colour(0.75164, 0.60648, 0.22648),Colour(0.628281, 0.555802, 0.366065),32.2, 0);
+
+	// Material for the cylinder 
+	Material cylMat( Colour(0.0, 0.0, 0.6), Colour(0.75164, 0.60648, 0.22648),Colour(0.628281, 0.555802, 0.366065),32.2, 0);
+	// Material for the disk
+	Material diskMat( Colour(0.5, 0.0, 0.5), Colour(0.75164, 0.60648, 0.22648),Colour(0.628281, 0.555802, 0.366065),32.2, 0);
 
 	// NOTE: Can only use HeadLight or Light Source but not both! 
-if(HEADLIGHTS==1)
-{
-	// Note: Below takes way longer with reflection implemented 
-//	raytracer.addHeadLightSource( -5, 0, 0, 0.9, 0.9, 0.9); 
-	raytracer.addHeadLightSource( 5, 0, 0, 0.9, 0.9, 0.9);
-}
+	if(HEADLIGHTS==1)
+	{
+		// Note: Below takes way longer with reflection implemented 
+	//	raytracer.addHeadLightSource( -5, 0, 0, 0.9, 0.9, 0.9); 
+		raytracer.addHeadLightSource( 5, 0, 0, 0.9, 0.9, 0.9);
+	}
 
-else
-{
-	// Defines a point light source with location in 3D as well as the color of the light.  (closed to white) 
-	// Add the point light source to the ray tracer's list of lightSource 
-//	raytracer.addLightSource( new PointLight(Point3D(-5, 0, 0), Colour(0.9, 0.9, 0.9)));
-	raytracer.addLightSource( new PointLight(Point3D(5, 0, 0), Colour(0.9, 0.9, 0.9)));
-}
-
-
-// raytracer.addLightSource( new PointLight(Point3D(5, 0, 0), Colour(0.4, 0.4, 0.4))); // Test: Darker light source 
+	else
+	{
+		// Defines a point light source with location in 3D as well as the color of the light.  (closed to white) 
+		// Add the point light source to the ray tracer's list of lightSource 
+	//	raytracer.addLightSource( new PointLight(Point3D(-5, 0, 0), Colour(0.9, 0.9, 0.9)));
+		raytracer.addLightSource( new PointLight(Point3D(5, 0, 0), Colour(0.9, 0.9, 0.9)));
+	}
+	// raytracer.addLightSource( new PointLight(Point3D(5, 0, 0), Colour(0.4, 0.4, 0.4))); // Test: Darker light source 
 
 	// Need associate created material with objects 
 	// Adding actual objects to world  (known as SceneObject) 
@@ -1041,12 +1072,12 @@ else
 						// (SceneObject, Material) 
 	SceneDagNode* sphere = raytracer.addObject( new UnitSphere(), &gold );
 	SceneDagNode* plane = raytracer.addObject( new UnitSquare(), &jade );
-	SceneDagNode* sphereTwo = raytracer.addObject( new UnitSphere(), &mud );
+
 	// now root has 2 childs, both the unitSphere and the unitSquare 
 	// but really it is
 	// root->child->Sphere
 	// root->Sphere->next->plane
-	
+
 	//-----------------------------------------------------------------------------------------------------------
 	// Step3 : Apply transformation to the objects to put them in place 
 	//-----------------------------------------------------------------------------------------------------------
@@ -1056,6 +1087,22 @@ else
 	double factor1[3] = { 1.0, 2.0, 1.0 };
 	double factor2[3] = { 6.0, 6.0, 6.0 };
 	double factor3[3] = { 1.0, 1.0, 1.0 };
+	double factor4[3] = { 0.25, 0.25, 0.25 };
+	// NEW QUADRIC SURFACE 
+	if (DRAWCYLINDER == 1)
+	{
+		SceneDagNode* cylinder = raytracer.addObject( new UnitCylinder(), &cylMat );
+		raytracer.translate(cylinder, Vector3D(-2,-2,-5));
+		raytracer.scale(cylinder, Point3D(0,0,0), factor3);
+
+		// only draw disk if no glossy 		
+		if(NUMGLOSSY <= 1)
+		{
+			SceneDagNode* disk = raytracer.addObject( new UnitDisk(), &diskMat );
+			raytracer.translate(disk, Vector3D(-1,1,-2));
+			raytracer.scale(disk, Point3D(0,0,0), factor4);
+		}
+	}
 	// Do transformations on sphere 
 	// Add the translation matrix to the sphere's list of transformation and inverse transformation 
 	raytracer.translate(sphere, Vector3D(0, 0, -5));	
@@ -1063,14 +1110,17 @@ else
 	raytracer.rotate(sphere, 'x', -45); 
 	raytracer.rotate(sphere, 'z', 45); 
 	if (SCALESPHERE == 1 && DOMOTIONBLUR == 0)	raytracer.scale(sphere, Point3D(0, 0, 0), factor1);
-	// Add the translation matrix to the sphere's list of transformation and inverse transformation 
-	raytracer.translate(sphereTwo, Vector3D(2, 2, -5));	
-	// Similarly, add rotations and scaling 
-	raytracer.rotate(sphereTwo, 'x', -30); 
-	raytracer.rotate(sphereTwo, 'z', 25); 
-	if (SCALESPHERE == 1)raytracer.scale(sphereTwo, Point3D(0, 0, 0), factor1);
-
- 	if(DOMOTIONBLUR == 1)raytracer.scale(sphere, Point3D(0, 0, 0), factor3);
+	if(ONLYPARTONE != 1)
+	{
+		SceneDagNode* sphereTwo = raytracer.addObject( new UnitSphere(), &mud );
+		// Add the translation matrix to the sphere's list of transformation and inverse transformation 
+		raytracer.translate(sphereTwo, Vector3D(2, 2, -5));	
+		// Similarly, add rotations and scaling 
+		raytracer.rotate(sphereTwo, 'x', -30); 
+		raytracer.rotate(sphereTwo, 'z', 25); 
+		if (SCALESPHERE == 1)raytracer.scale(sphereTwo, Point3D(0, 0, 0), factor1);
+	}
+ 	if(DOMOTIONBLUR == 1) raytracer.scale(sphere, Point3D(0, 0, 0), factor3);
 	// Similarly, do transformations on the plane 
 	raytracer.translate(plane, Vector3D(0, 0, -7));	
 	raytracer.rotate(plane, 'z', 45); 
@@ -1083,7 +1133,7 @@ else
 	// Note: Render creates and flushes the pixel buffer in 2 different functions (it creates the pixel buffer in render() and flushes it in flushPixelBuffer() that is called by render() 
 	raytracer.render(width, height, eye, view, up, fov, "view1.bmp", sphere);	// output the image with name view1.bmp
 	
-std::cout << "View1.bmp done" << std::endl; 
+	std::cout << "View1.bmp done" << std::endl; 
 	// Render it from a different point of view.
 	Point3D eye2(4, 2, 1);
 	Vector3D view2(-4, -2, -6);
@@ -1091,15 +1141,15 @@ std::cout << "View1.bmp done" << std::endl;
 	//Vector3D view2(0, 0, -1);
 	raytracer.render(width, height, eye2, view2, up, fov, "view2.bmp", sphere);	// output the image with name view2.bmp 
 
-std::cout << "View2.bmp done" << std::endl; 
+	std::cout << "View2.bmp done" << std::endl; 
 	Point3D eye3(-1, 0, 0);
 	Vector3D view3(1, 0, -1);
 	raytracer.render(width, height, eye3, view3, up, fov, "view3.bmp", sphere);	// output the image with name
-std::cout << "View3.bmp done" << std::endl; 
+	std::cout << "View3.bmp done" << std::endl; 
 	Point3D eye4(-2, 0, -6);
 	Vector3D view4(1, 0, 0);
 	raytracer.render(width, height, eye4, view4, up, fov, "view4.bmp", sphere);	// output the image with name
-std::cout << "View4.bmp done" << std::endl; 
+	std::cout << "View4.bmp done" << std::endl; 
 	return 0;
 }
 

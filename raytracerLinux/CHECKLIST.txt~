@@ -2,11 +2,8 @@
 Assignment 3 Checklist/Grading sheet
 -------------------------------------
 
-Name: Soon Chee Loong
-Student ID: 999295793	
-
-Name: Vivian Liu Chu Wei 
-Student ID: 998941043
+Name: 
+Student ID:
 
 -----------------------------------------------------------------------------------------
 A. PLEASE ANSWER THE FOLLOWING QUESTIONS (your assignment will not be graded otherwise!)
@@ -16,26 +13,19 @@ A. PLEASE ANSWER THE FOLLOWING QUESTIONS (your assignment will not be graded oth
    Academic Honesty policy stated in 
    http://www.cs.toronto.edu/~kyros/courses/418/policy.2010f.html
 
-   Yes  
+   ___Yes   ___No
 
 
 2. I collaborated on this assignment with another student 
    (see http://www.cs.toronto.edu/~kyros/courses/418/policy.2010f.html for
     policy on assignments done in collaboration)
 
-   Yes  
+   ___Yes   ___No
 
    If you checked yes, please supply the following
 
-       Student name: Vivian Liu Chu Wei
+       Student name: 
        Portion(s) of assignment completed by that student (see checklist below)
-
-	Ray Sphere Intersection 
-	Ray Square Intersection
-	Phong Shading
-	Written Report
-	Most of Part a) of the assignment
-	Animation (Still under render) 
 
 -----------------------------------------------------------------------------------------
 
@@ -49,28 +39,16 @@ B. PLACE AN (X) IN FRONT OF PORTIONS OF THE ASSIGNMENT THAT YOU COMPLETED IN FUL
    WE WILL BE ABLE TO MAKE AN ACCURATE ASSESSMENT
 
    
-_X__   (10 points) Part 1a     Ray casting
+___   (10 points) Part 1a     Ray casting
                   
-_X__   (20 points) Part 1b     Ray-sphere intersection
+___   (20 points) Part 1b     Ray-sphere intersection
 
-_X__   (15 points) Part 1c     Ray-square intersection
+___   (15 points) Part 1c     Ray-square intersection
 
-_X__   (15 points) Part 1d     Phong shading (ambient, diffuse, and specular components)
+___   (15 points) Part 1d     Phong shading (ambient, diffuse, and specular components)
                   
-_X__   ( 5 points) Part 1e     Coding style
+___   ( 5 points) Part 1e     Coding style
 
-_X__   (10 points) Part 1f     Written report
-
-Part B) of assignment
-Extended Ray Tracing
-Perfect Shadow
-Perfect Reflection
-Soft Shadow
-Depth of Field
-Texture Mapping
-Motion Blur
-Cylinder
-Glossy Reflection 
-Animation (It is still under render, we will submit at a later date) 
+___   (10 points) Part 1f     Written report
 
 -------------------------------------------------------------------------------- 

@@ -13,6 +13,10 @@
 // PointLight (child of LightSource) 
 //---------------------
 #include "util.h"
+#ifndef M_PI
+#define M_PI	3.14159265358979323846
+#endif
+
 
 // Base class for a light source.  You could define different types
 // of lights here, but point light is sufficient for most scenes you

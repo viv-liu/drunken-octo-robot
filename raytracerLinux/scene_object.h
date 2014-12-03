@@ -36,3 +36,34 @@ public:
 	bool intersect( Ray3D& ray, const Matrix4x4& worldToModel, const Matrix4x4& modelToWorld );
 };
 
+//----------------------------------------------------------------------------------------------------------
+class UnitDisk : public SceneObject {
+public:
+	bool intersect( Ray3D& ray, const Matrix4x4& worldToModel, const Matrix4x4& modelToWorld );
+};
+
+
+class UnitCylinder : public SceneObject {
+public:
+	bool intersect( Ray3D& ray, const Matrix4x4& worldToModel, const Matrix4x4& modelToWorld );
+};
+
+/* TOO DIFFICULT to complete within few hours last minute 
+class UnitCone : public SceneObject {
+public:
+	bool intersect( Ray3D& ray, const Matrix4x4& worldToModel, const Matrix4x4& modelToWorld );
+};
+
+class UnitTorus : public SceneObject {
+public:
+	bool intersect( Ray3D& ray, const Matrix4x4& worldToModel, const Matrix4x4& modelToWorld );
+};
+*/
+
+
+/* // Helper function to make torus faster but not needed, it makes it more efficient 
+class UnitBoundingBox : public SceneObject {
+public:
+	bool intersect( Ray3D& ray, const Matrix4x4& worldToModel, const Matrix4x4& modelToWorld );
+};*/
+

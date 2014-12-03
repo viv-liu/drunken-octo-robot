@@ -1,0 +1,23 @@
+Overall submission
+PART A:
+Ray casting
+A ray was constructed from the camera to the center of each pixel on the image plane, using a for loop.
+
+Sphere intersection
+First the incoming ray is converted to object space using the worldToModel matrix. The object space ray has to have x, y, and z components that satisfy the equation x(t)^2 + y(t)^2 + z(t)^2 = 1 for an intersection with the surface of the sphere. The parameter t is computed using a quadratic equation, and t is only valid if it is greater than 0 (intersection occurred ahead of the origin). In the case when there are 2 valid t values, the smaller one is taken as this marks the closest intersection to the origin of the ray. The normal is the radius, a vector from the origin (0,0,0) to the intersection point in object space. The t value, along with the intersection point (converted back to world space) and normal (transformed using the inverse of the modelToWorld matrix and normalized) are loaded into the input ray object.
+
+Plane intersection
+The same conversion to object space is used. This time, a t-value is computed to see if the ray intersects the xy plane. The x(t) and y(t) are computed to see if it fits within the bounds of the square. If so, store the normal (0, 0, 1) and intersection point in world coordinates.
+
+Phong shading
+This is all in lightsource.cpp, where if there is an intersection, pull out the ambient, diffuse, and specular components of the light source and the intersected material. Now the angles are computed like they were done in class to be used to determine the magnitude of the diffuse and specular components. Then the general Phong equation is used to compute the magnitude of the each of the RGB streams, ad these values are inserted back into the input ray->col.
+
+Antialiasing
+This is done in raytracer.cpp by shooting a constant NUMANTIALIASE number of rays into random positions on the screen within +- 1 at each imagePlane coordinate. The color is gathered over these rays and divided by NUMANTIALIASE to average it out, and this is the one that the final color that is rendered.
+
+
+
+
+Program and other file structures
+What implemented & external resources used
+Role of each member in project

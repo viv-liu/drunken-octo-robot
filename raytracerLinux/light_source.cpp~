@@ -108,16 +108,16 @@ void PointLight::shade( Ray3D& ray, bool isInShadow, int onlyAmbient, int textur
 			ray.col[0] = (color);// /(double)255 ;
 			magnitude = IntersectPoint[1];
 			magnitude = (magnitude * M_PI); // /(double)width;
-			double sineValue = sin(magnitude); 
+			 sineValue = sin(magnitude); 
 
-			double color = 0; 
+			 color = 0; 
 			if (sineValue >= 0) color = 1; // set to 1 ha
 			ray.col[1] = (color);// /(double)255 ;
 			magnitude = IntersectPoint[2];
 			magnitude = (magnitude * M_PI); // /(double)width;
-			double sineValue = sin(magnitude); 
+			 sineValue = sin(magnitude); 
 
-			double color = 0; 
+			 color = 0; 
 			if (sineValue >= 0) color = 1; // set to 1 ha
 			ray.col[2] = (color);// /(double)255 ;
 		}

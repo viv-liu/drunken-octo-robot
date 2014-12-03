@@ -18,10 +18,10 @@ This is done in raytracer.cpp by shooting a constant NUMANTIALIASE number of ray
 
 
 
-B) Program and other file structures
+Program and other file structures
 
-C) What implemented & external resources used
-C.1) Implemented: 
+What implemented & external resources used
+Implemented 
 Ray Casting
 Intersection Code for Ray-Sphere Intersection 
 Intersection code for Ray-Square Intersection 
@@ -38,16 +38,9 @@ Motion Blur
 Intersection Code for Ray-Disk Intersection
 Intersection Code for Ray-Cylinder Intersection
 Glossy Reflection
-Animation (To be submitted, still under render) 
-
-C.2) External Resources:
-Fundamentals of Computer Graphics by Shirley (Course textbook)
-Depth of Field Pseudocode: http://ray-tracer-concept.blogspot.ca/2011/12/depth-of-field.html
-Ray-Cylinder Intersection Pseudocode: http://tog.acm.org/resources/GraphicsGems/gemsiv/ray_cyl.c
-
 
 D) Role of Each Member on the Project
-D.1) Vivian Liu Chu Wei
+Vivian Liu Chu Wei
 
 Ray Casting
 Intersection Code for Ray-Sphere Intersection 
@@ -58,7 +51,7 @@ Animation
 Perfect Shadow 
 Report
 
-D.2) Soon Chee Loong
+Soon Chee Loong
 Fixed bug for view being independent of eye position. 
 Fixed bug for Intersection code for Ray-Square Intersection 
 Improve Anti-Aliasing
@@ -70,5 +63,4 @@ Motion Blur
 Intersection Code for Ray-Disk Intersection
 Intersection Code for Ray-Cylinder Intersection
 Glossy Reflection
-Coding Style: Added header to easily navigate between modes during compilation 
 Report 
